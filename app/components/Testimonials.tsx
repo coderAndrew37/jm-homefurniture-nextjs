@@ -1,4 +1,4 @@
-ann"use client";
+"use client";
 import { useRef, useEffect } from "react";
 import { gsap } from "gsap";
 
@@ -86,7 +86,7 @@ export default function Testimonials() {
               </p>
 
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                <div className="w-12 h-12 bg-linear-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
                   {testimonial.name.charAt(0)}
                 </div>
                 <div>
