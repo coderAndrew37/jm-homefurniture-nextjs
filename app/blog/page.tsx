@@ -1,137 +1,37 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { client, queries, urlFor } from "@/lib/sanity";
+import { groq } from "next-sanity";
 
 export const metadata: Metadata = {
   title: "Blog - Home Styling Tips & Furniture Guides | Kenyan Furniture",
   description:
-    "Discover home styling tips, furniture care guides, and interior design inspiration for Kenyan homes. Transform your space with our expert advice.",
-  keywords: [
-    "home decor",
-    "furniture tips",
-    "interior design",
-    "Kenyan homes",
-    "styling advice",
-  ],
+    "Discover home styling tips, furniture care guides, and interior design inspiration for Kenyan homes.",
 };
 
-// Mock blog data - replace with your CMS data
-const blogPosts = [
-  {
-    id: 1,
-    slug: "5-ways-to-incorporate-kenyan-culture-in-modern-home-design",
-    title: "5 Ways to Incorporate Kenyan Culture in Modern Home Design",
-    excerpt:
-      "Learn how to blend traditional Kenyan elements with contemporary furniture to create a space that celebrates local heritage while maintaining modern aesthetics.",
-    image: "/blog-1.jpg",
-    date: "2024-03-15",
-    readTime: "5 min read",
-    author: {
-      name: "Sarah Wanjiku",
-      image: "/author-1.jpg",
-    },
-    category: "Design Tips",
-    tags: ["kenyan design", "modern", "cultural", "home styling"],
-  },
-  {
-    id: 2,
-    slug: "the-ultimate-guide-to-choosing-the-right-sofa-for-your-living-room",
-    title: "The Ultimate Guide to Choosing the Right Sofa for Your Living Room",
-    excerpt:
-      "Everything you need to know about sofa sizes, materials, styles, and placement to create the perfect living room setup for your Kenyan home.",
-    image: "/blog-2.jpg",
-    date: "2024-03-12",
-    readTime: "7 min read",
-    author: {
-      name: "James Mwangi",
-      image: "/author-2.jpg",
-    },
-    category: "Buying Guide",
-    tags: ["sofa", "living room", "furniture guide", "kenyan homes"],
-  },
-  {
-    id: 3,
-    slug: "sustainable-furniture-why-kenyan-hardwood-is-the-best-choice",
-    title: "Sustainable Furniture: Why Kenyan Hardwood is the Best Choice",
-    excerpt:
-      "Discover the benefits of using locally sourced, sustainable materials from Kenyan forests and how they contribute to both quality furniture and environmental conservation.",
-    image: "/blog-3.jpg",
-    date: "2024-03-08",
-    readTime: "4 min read",
-    author: {
-      name: "Grace Akinyi",
-      image: "/author-3.jpg",
-    },
-    category: "Sustainability",
-    tags: ["sustainable", "hardwood", "eco-friendly", "kenyan materials"],
-  },
-  {
-    id: 4,
-    slug: "maximizing-small-spaces-nairobi-apartment-design-solutions",
-    title: "Maximizing Small Spaces: Nairobi Apartment Design Solutions",
-    excerpt:
-      "Creative furniture solutions and layout ideas for making the most of compact living spaces in Nairobi apartments and urban homes.",
-    image: "/blog-4.jpg",
-    date: "2024-03-05",
-    readTime: "6 min read",
-    author: {
-      name: "David Ochieng",
-      image: "/author-4.jpg",
-    },
-    category: "Space Planning",
-    tags: ["small spaces", "nairobi", "apartment", "space saving"],
-  },
-  {
-    id: 5,
-    slug: "seasonal-furniture-care-maintaining-your-investment-in-kenyan-climate",
-    title:
-      "Seasonal Furniture Care: Maintaining Your Investment in Kenyan Climate",
-    excerpt:
-      "Essential maintenance tips to protect your furniture from humidity, sunlight, and seasonal changes specific to Kenyan weather conditions.",
-    image: "/blog-5.jpg",
-    date: "2024-03-01",
-    readTime: "8 min read",
-    author: {
-      name: "Emily Atieno",
-      image: "/author-5.jpg",
-    },
-    category: "Care & Maintenance",
-    tags: ["furniture care", "maintenance", "kenyan climate", "wood care"],
-  },
-  {
-    id: 6,
-    slug: "mixing-patterns-and-textures-african-inspired-interior-design",
-    title: "Mixing Patterns and Textures: African Inspired Interior Design",
-    excerpt:
-      "How to confidently mix traditional African patterns with modern textures to create vibrant, culturally rich interior spaces that feel both contemporary and authentic.",
-    image: "/blog-6.jpg",
-    date: "2024-02-25",
-    readTime: "5 min read",
-    author: {
-      name: "Michael Kamau",
-      image: "/author-6.jpg",
-    },
-    category: "Design Tips",
-    tags: ["african design", "patterns", "textures", "interior design"],
-  },
-];
+async function getBlogPosts() {
+  return await client.fetch(groq`${queries.blogPosts}`);
+}
 
-const categories = [
-  { name: "All", slug: "all", count: 12 },
-  { name: "Design Tips", slug: "design-tips", count: 4 },
-  { name: "Buying Guide", slug: "buying-guide", count: 3 },
-  { name: "Sustainability", slug: "sustainability", count: 2 },
-  { name: "Space Planning", slug: "space-planning", count: 2 },
-  { name: "Care & Maintenance", slug: "care-maintenance", count: 1 },
-];
+async function getCategories() {
+  return await client.fetch(groq`${queries.categories}`);
+}
 
-const popularPosts = blogPosts.slice(0, 3);
+export default async function BlogPage() {
+  const [posts, categories] = await Promise.all([
+    getBlogPosts(),
+    getCategories(),
+  ]);
 
-export default function BlogPage() {
+  const featuredPost = posts.find((post: any) => post.featured) || posts[0];
+  const otherPosts = posts.filter((post: any) => post._id !== featuredPost._id);
+  const popularPosts = posts.slice(0, 3);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <section className="bg-linear-to-r from-amber-500 to-amber-600 text-white py-20">
+      <section className="bg-gradient-to-r from-amber-500 to-amber-600 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold mb-6">Furniture Blog</h1>
           <p className="text-xl max-w-2xl mx-auto">
@@ -151,11 +51,14 @@ export default function BlogPage() {
                 Featured Articles
               </h2>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <Link href={`/blog/${blogPosts[0].slug}`}>
-                  <div className="relative aspect-21/9 overflow-hidden">
+                <Link href={`/blog/${featuredPost.slug.current}`}>
+                  <div className="relative aspect-[21/9] overflow-hidden">
                     <Image
-                      src={blogPosts[0].image}
-                      alt={blogPosts[0].title}
+                      src={urlFor(featuredPost.mainImage)
+                        .width(800)
+                        .height(400)
+                        .url()}
+                      alt={featuredPost.title}
                       fill
                       className="object-cover hover:scale-105 transition-transform duration-500"
                     />
@@ -170,47 +73,46 @@ export default function BlogPage() {
                 <div className="p-8">
                   <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                     <span>
-                      {new Date(blogPosts[0].date).toLocaleDateString("en-KE", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {new Date(featuredPost.publishedAt).toLocaleDateString(
+                        "en-KE",
+                        { year: "numeric", month: "long", day: "numeric" }
+                      )}
                     </span>
                     <span>•</span>
-                    <span>{blogPosts[0].readTime}</span>
+                    <span>{featuredPost.readTime}</span>
                     <span>•</span>
                     <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                      {blogPosts[0].category}
+                      {featuredPost.categories[0]?.title}
                     </span>
                   </div>
 
-                  <Link href={`/blog/${blogPosts[0].slug}`}>
+                  <Link href={`/blog/${featuredPost.slug.current}`}>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4 hover:text-amber-600 transition-colors">
-                      {blogPosts[0].title}
+                      {featuredPost.title}
                     </h3>
                   </Link>
 
                   <p className="text-gray-600 mb-6 text-lg">
-                    {blogPosts[0].excerpt}
+                    {featuredPost.excerpt}
                   </p>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center text-white font-semibold">
-                        {blogPosts[0].author.name
+                        {featuredPost.author.name
                           .split(" ")
-                          .map((n) => n[0])
+                          .map((n: string) => n[0])
                           .join("")}
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900">
-                          {blogPosts[0].author.name}
+                          {featuredPost.author.name}
                         </p>
                       </div>
                     </div>
 
                     <Link
-                      href={`/blog/${blogPosts[0].slug}`}
+                      href={`/blog/${featuredPost.slug.current}`}
                       className="text-amber-600 font-semibold hover:text-amber-700 transition-colors flex items-center gap-2"
                     >
                       Read More
@@ -227,15 +129,18 @@ export default function BlogPage() {
                 Latest Articles
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {blogPosts.slice(1).map((post) => (
+                {otherPosts.map((post: any) => (
                   <article
-                    key={post.id}
+                    key={post._id}
                     className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300"
                   >
-                    <Link href={`/blog/${post.slug}`}>
-                      <div className="relative aspect-4/3 overflow-hidden">
+                    <Link href={`/blog/${post.slug.current}`}>
+                      <div className="relative aspect-[4/3] overflow-hidden">
                         <Image
-                          src={post.image}
+                          src={urlFor(post.mainImage)
+                            .width(400)
+                            .height(300)
+                            .url()}
                           alt={post.title}
                           fill
                           className="object-cover hover:scale-105 transition-transform duration-500"
@@ -246,16 +151,16 @@ export default function BlogPage() {
                     <div className="p-6">
                       <div className="flex items-center gap-3 text-sm text-gray-600 mb-3">
                         <span>
-                          {new Date(post.date).toLocaleDateString("en-KE", {
-                            month: "short",
-                            day: "numeric",
-                          })}
+                          {new Date(post.publishedAt).toLocaleDateString(
+                            "en-KE",
+                            { month: "short", day: "numeric" }
+                          )}
                         </span>
                         <span>•</span>
                         <span>{post.readTime}</span>
                       </div>
 
-                      <Link href={`/blog/${post.slug}`}>
+                      <Link href={`/blog/${post.slug.current}`}>
                         <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-amber-600 transition-colors line-clamp-2">
                           {post.title}
                         </h3>
@@ -270,7 +175,7 @@ export default function BlogPage() {
                           <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                             {post.author.name
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")}
                           </div>
                           <span className="text-sm text-gray-600">
@@ -279,7 +184,7 @@ export default function BlogPage() {
                         </div>
 
                         <Link
-                          href={`/blog/${post.slug}`}
+                          href={`/blog/${post.slug.current}`}
                           className="text-amber-600 font-semibold hover:text-amber-700 transition-colors text-sm"
                         >
                           Read More
@@ -289,13 +194,6 @@ export default function BlogPage() {
                   </article>
                 ))}
               </div>
-            </div>
-
-            {/* Load More */}
-            <div className="text-center">
-              <button className="bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-amber-600 transition-colors">
-                Load More Articles
-              </button>
             </div>
           </div>
 
@@ -308,17 +206,17 @@ export default function BlogPage() {
                   Categories
                 </h3>
                 <div className="space-y-2">
-                  {categories.map((category) => (
+                  {categories.map((category: any) => (
                     <Link
-                      key={category.slug}
-                      href={`/blog/category/${category.slug}`}
+                      key={category._id}
+                      href={`/blog/category/${category.slug.current}`}
                       className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group"
                     >
                       <span className="text-gray-700 group-hover:text-amber-600">
-                        {category.name}
+                        {category.title}
                       </span>
                       <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-sm">
-                        {category.count}
+                        {category.postCount}
                       </span>
                     </Link>
                   ))}
@@ -331,15 +229,18 @@ export default function BlogPage() {
                   Popular Posts
                 </h3>
                 <div className="space-y-4">
-                  {popularPosts.map((post) => (
+                  {popularPosts.map((post: any) => (
                     <Link
-                      key={post.id}
-                      href={`/blog/${post.slug}`}
+                      key={post._id}
+                      href={`/blog/${post.slug.current}`}
                       className="flex gap-3 group"
                     >
-                      <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
+                      <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
                         <Image
-                          src={post.image}
+                          src={urlFor(post.mainImage)
+                            .width(64)
+                            .height(64)
+                            .url()}
                           alt={post.title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -350,10 +251,10 @@ export default function BlogPage() {
                           {post.title}
                         </h4>
                         <p className="text-gray-500 text-xs mt-1">
-                          {new Date(post.date).toLocaleDateString("en-KE", {
-                            month: "short",
-                            day: "numeric",
-                          })}
+                          {new Date(post.publishedAt).toLocaleDateString(
+                            "en-KE",
+                            { month: "short", day: "numeric" }
+                          )}
                         </p>
                       </div>
                     </Link>
@@ -362,7 +263,7 @@ export default function BlogPage() {
               </div>
 
               {/* Newsletter */}
-              <div className="bg-linear-to-r from-amber-500 to-amber-600 rounded-2xl p-6 text-white">
+              <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-6 text-white">
                 <h3 className="font-semibold text-lg mb-3">Stay Updated</h3>
                 <p className="text-amber-100 text-sm mb-4">
                   Get the latest furniture tips and home styling advice
@@ -392,9 +293,9 @@ export default function BlogPage() {
                   Popular Tags
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {Array.from(new Set(blogPosts.flatMap((post) => post.tags)))
+                  {Array.from(new Set(posts.flatMap((post: any) => post.tags)))
                     .slice(0, 10)
-                    .map((tag) => (
+                    .map((tag: string) => (
                       <Link
                         key={tag}
                         href={`/blog/tag/${tag}`}

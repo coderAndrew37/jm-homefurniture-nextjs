@@ -1,103 +1,106 @@
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Metadata } from 'next'
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { Metadata } from "next";
 
 // Mock data - replace with your actual data source
 const categories = {
-  'living-room': {
-    name: 'Living Room',
-    description: 'Comfortable and stylish living room furniture'
+  "living-room": {
+    name: "Living Room",
+    description: "Comfortable and stylish living room furniture",
   },
-  'bedroom': {
-    name: 'Bedroom', 
-    description: 'Create your perfect sleep sanctuary'
+  bedroom: {
+    name: "Bedroom",
+    description: "Create your perfect sleep sanctuary",
   },
-  'dining': {
-    name: 'Dining',
-    description: 'Elegant dining furniture for family gatherings'
+  dining: {
+    name: "Dining",
+    description: "Elegant dining furniture for family gatherings",
   },
-  'office': {
-    name: 'Office',
-    description: 'Productive home office solutions'
-  }
-}
+  office: {
+    name: "Office",
+    description: "Productive home office solutions",
+  },
+};
 
 const products = {
-  'living-room': [
+  "living-room": [
     {
       id: 1,
-      slug: 'maasai-inspired-sofa',
-      name: 'Maasai Inspired Sofa',
+      slug: "maasai-inspired-sofa",
+      name: "Maasai Inspired Sofa",
       price: 45000,
       originalPrice: 52000,
-      image: '/sofa-1.jpg',
+      image: "/sofa-1.jpg",
       rating: 4.8,
       reviews: 124,
-      description: 'Handcrafted sofa with traditional Maasai patterns',
-      features: ['Premium upholstery', 'Solid wood frame', 'Easy to clean']
+      description: "Handcrafted sofa with traditional Maasai patterns",
+      features: ["Premium upholstery", "Solid wood frame", "Easy to clean"],
     },
     {
       id: 2,
-      slug: 'modern-loveseat',
-      name: 'Modern Loveseat',
+      slug: "modern-loveseat",
+      name: "Modern Loveseat",
       price: 32000,
-      image: '/loveseat-1.jpg',
+      image: "/loveseat-1.jpg",
       rating: 4.6,
       reviews: 89,
-      description: 'Compact loveseat perfect for small spaces',
-      features: ['Compact design', 'Modern styling', 'Comfortable seating']
-    }
+      description: "Compact loveseat perfect for small spaces",
+      features: ["Compact design", "Modern styling", "Comfortable seating"],
+    },
   ],
-  'bedroom': [
+  bedroom: [
     {
       id: 3,
-      slug: 'savannah-bed-frame',
-      name: 'Savannah Bed Frame',
+      slug: "savannah-bed-frame",
+      name: "Savannah Bed Frame",
       price: 67000,
       originalPrice: 75000,
-      image: '/bed-1.jpg',
+      image: "/bed-1.jpg",
       rating: 4.7,
       reviews: 156,
-      description: 'King size bed frame with Savannah-inspired design',
-      features: ['Solid wood construction', 'Ample storage', 'Easy assembly']
-    }
-  ]
-}
+      description: "King size bed frame with Savannah-inspired design",
+      features: ["Solid wood construction", "Ample storage", "Easy assembly"],
+    },
+  ],
+};
 
 interface CategoryPageProps {
   params: {
-    category: string
-  }
+    category: string;
+  };
 }
 
-export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const category = categories[params.category as keyof typeof categories]
-  
+export async function generateMetadata({
+  params,
+}: CategoryPageProps): Promise<Metadata> {
+  const category = categories[params.category as keyof typeof categories];
+
   if (!category) {
     return {
-      title: 'Category Not Found'
-    }
+      title: "Category Not Found",
+    };
   }
 
   return {
     title: `${category.name} - Kenyan Furniture Store`,
-    description: category.description
-  }
+    description: category.description,
+  };
 }
 
 export async function generateStaticParams() {
   return Object.keys(categories).map((category) => ({
-    category
-  }))
+    category,
+  }));
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
-  const category = categories[params.category as keyof typeof categories]
-  const categoryProducts = products[params.category as keyof typeof products] || []
+  const category = categories[params.category as keyof typeof categories];
+  const categoryProducts =
+    products[params.category as keyof typeof products] || [];
 
   if (!category) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -110,7 +113,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               Home
             </Link>
             <span className="text-gray-400">/</span>
-            <Link href="/categories" className="text-gray-500 hover:text-amber-600">
+            <Link
+              href="/categories"
+              className="text-gray-500 hover:text-amber-600"
+            >
               Categories
             </Link>
             <span className="text-gray-400">/</span>
@@ -146,7 +152,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <option>Customer Reviews</option>
                 <option>Newest Arrivals</option>
               </select>
-              
+
               <div className="text-gray-600">
                 {categoryProducts.length} products
               </div>
@@ -181,7 +187,11 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                       />
                       {product.originalPrice && (
                         <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                          Save {Math.round((1 - product.price / product.originalPrice) * 100)}%
+                          Save{" "}
+                          {Math.round(
+                            (1 - product.price / product.originalPrice) * 100
+                          )}
+                          %
                         </div>
                       )}
                     </div>
@@ -197,9 +207,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
                       <div className="flex items-center mb-3">
                         <div className="flex text-amber-400">
-                          {'★'.repeat(Math.floor(product.rating))}
+                          {"★".repeat(Math.floor(product.rating))}
                           <span className="text-gray-300">
-                            {'★'.repeat(5 - Math.floor(product.rating))}
+                            {"★".repeat(5 - Math.floor(product.rating))}
                           </span>
                         </div>
                         <span className="text-sm text-gray-600 ml-2">
@@ -254,15 +264,16 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               About Our {category.name} Collection
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Discover our carefully curated {category.name.toLowerCase()} furniture collection, 
-              designed specifically for Kenyan homes. Each piece combines modern aesthetics with 
-              traditional craftsmanship, ensuring both style and durability. From contemporary 
-              designs to classic pieces with local influences, find the perfect furniture to 
-              transform your space.
+              Discover our carefully curated {category.name.toLowerCase()}{" "}
+              furniture collection, designed specifically for Kenyan homes. Each
+              piece combines modern aesthetics with traditional craftsmanship,
+              ensuring both style and durability. From contemporary designs to
+              classic pieces with local influences, find the perfect furniture
+              to transform your space.
             </p>
           </div>
         </div>
       </section>
     </div>
-  )
+  );
 }
