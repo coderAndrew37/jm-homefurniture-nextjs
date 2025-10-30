@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { client, queries, urlFor } from "@/lib/sanity";
 import { groq } from "next-sanity";
+import { client, queries, urlFor } from "@/lib/sanity.client";
 
 export const metadata: Metadata = {
   title: "Blog - Home Styling Tips & Furniture Guides | Kenyan Furniture",

@@ -2,11 +2,10 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { client, queries, urlFor } from "@/lib/sanity";
 import { groq } from "next-sanity";
 import { PortableText } from "@portabletext/react";
-
-interface Post {}
+import { client, queries, urlFor } from "@/lib/sanity.client";
+import { BlogPost } from "@/app/types/sanity";
 
 interface BlogPageProps {
   params: {
@@ -46,7 +45,7 @@ export async function generateMetadata({
 export async function generateStaticParams() {
   const posts = await client.fetch(groq`*[_type == "post"]{ slug }`);
 
-  return posts.map((post: any) => ({
+  return posts.map((post: BlogPost) => ({
     slug: post.slug.current,
   }));
 }

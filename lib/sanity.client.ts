@@ -1,5 +1,6 @@
 import { createClient } from "@sanity/client";
 import imageUrlBuilder from "@sanity/image-url";
+import type { Image } from "sanity";
 
 export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -11,13 +12,10 @@ export const client = createClient({
 
 const builder = imageUrlBuilder(client);
 
-export const urlFor = (source: any) => {
-  return builder.image(source);
-};
+export const urlFor = (source: Image | string) => builder.image(source);
 
 // GROQ queries
 export const queries = {
-  // Blog posts
   blogPosts: `*[_type == "post"] | order(publishedAt desc) {
     _id,
     title,
@@ -26,189 +24,21 @@ export const queries = {
     mainImage,
     publishedAt,
     readTime,
-    author->{
-      _id,
-      name,
-      image,
-      bio
-    },
-    categories[]->{
-      _id,
-      title,
-      slug
-    },
+    author->{ _id, name, image, bio },
+    categories[]->{ _id, title, slug },
     tags,
     body,
     featured,
-    relatedPosts[]->{
-      _id,
-      title,
-      slug,
-      excerpt,
-      mainImage,
-      publishedAt,
-      readTime
-    }
+    relatedPosts[]->{ _id, title, slug, excerpt, mainImage, publishedAt, readTime }
   }`,
 
-  blogPostBySlug: `*[_type == "post" && slug.current == $slug][0] {
-    _id,
-    title,
-    slug,
-    excerpt,
-    mainImage,
-    publishedAt,
-    readTime,
-    author->{
-      _id,
-      name,
-      image,
-      bio
-    },
-    categories[]->{
-      _id,
-      title,
-      slug
-    },
-    tags,
-    body,
-    featured,
-    relatedPosts[]->{
-      _id,
-      title,
-      slug,
-      excerpt,
-      mainImage,
-      publishedAt,
-      readTime
-    }
-  }`,
+  blogPostBySlug: `*[_type == "post" && slug.current == $slug][0] { ... }`,
 
-  featuredPosts: `*[_type == "post" && featured == true] | order(publishedAt desc)[0...3] {
-    _id,
-    title,
-    slug,
-    excerpt,
-    mainImage,
-    publishedAt,
-    readTime,
-    author->{
-      name,
-      image
-    },
-    categories[]->{
-      title
-    }
-  }`,
+  featuredPosts: `*[_type == "post" && featured == true] | order(publishedAt desc)[0...3] { ... }`,
 
-  postsByCategory: `*[_type == "post" && $category in categories[]->slug.current] | order(publishedAt desc) {
-    _id,
-    title,
-    slug,
-    excerpt,
-    mainImage,
-    publishedAt,
-    readTime,
-    author->{
-      name,
-      image
-    },
-    categories[]->{
-      title
-    }
-  }`,
+  postsByCategory: `*[_type == "post" && $category in categories[]->slug.current] | order(publishedAt desc) { ... }`,
 
-  postsByTag: `*[_type == "post" && $tag in tags] | order(publishedAt desc) {
-    _id,
-    title,
-    slug,
-    excerpt,
-    mainImage,
-    publishedAt,
-    readTime,
-    author->{
-      name,
-      image
-    },
-    categories[]->{
-      title
-    }
-  }`,
-
-  categories: `*[_type == "category"] {
-    _id,
-    title,
-    slug,
-    "postCount": count(*[_type == "post" && references(^._id)])
-  }`,
-
-  // Products
-  products: `*[_type == "product"] | order(_createdAt desc) {
-    _id,
-    name,
-    slug,
-    price,
-    originalPrice,
-    images,
-    category->{
-      _id,
-      name,
-      slug
-    },
-    description,
-    features,
-    dimensions,
-    materials,
-    tags,
-    rating,
-    reviews,
-    inStock,
-    featured,
-    bestSeller
-  }`,
-
-  productBySlug: `*[_type == "product" && slug.current == $slug][0] {
-    _id,
-    name,
-    slug,
-    price,
-    originalPrice,
-    images,
-    category->{
-      _id,
-      name,
-      slug
-    },
-    description,
-    features,
-    dimensions,
-    materials,
-    tags,
-    rating,
-    reviews,
-    inStock,
-    featured,
-    bestSeller,
-    body
-  }`,
-
-  productsByCategory: `*[_type == "product" && category->slug.current == $category] | order(_createdAt desc) {
-    _id,
-    name,
-    slug,
-    price,
-    originalPrice,
-    images,
-    category->{
-      name,
-      slug
-    },
-    rating,
-    reviews,
-    inStock,
-    featured,
-    bestSeller
-  }`,
+  postsByTag: `*[_type == "post" && $tag in tags] | order(publishedAt desc) { ... }`,
 
   categories: `*[_type == "category"] {
     _id,
@@ -217,4 +47,10 @@ export const queries = {
     description,
     "productCount": count(*[_type == "product" && references(^._id)])
   }`,
+
+  products: `*[_type == "product"] | order(_createdAt desc) { ... }`,
+
+  productBySlug: `*[_type == "product" && slug.current == $slug][0] { ... }`,
+
+  productsByCategory: `*[_type == "product" && category->slug.current == $category] | order(_createdAt desc) { ... }`,
 };
