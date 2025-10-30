@@ -1,92 +1,59 @@
-import {
-  BlogPost,
-  Category,
-  Collection,
-  HeroBanner,
-  Product,
-  Testimonial,
-} from "@/app/types/sanity";
 import { client } from "./sanity.client";
-import { queries } from "./sanity.client";
+import { z } from "zod";
+import { SchemaMap } from "./sanity.schema";
+import { queries } from "./sanity.queries";
 
 /* ======================
-   GENERIC FETCH WRAPPER
+   GENERIC FETCH + VALIDATE
    ====================== */
-
-export async function sanityFetch<T>(
+export async function fetchAndValidate<T extends z.ZodTypeAny>(
   query: string,
+  schema: T,
   params: Record<string, unknown> = {}
-): Promise<T> {
+): Promise<z.infer<T>> {
+  const data = await client.fetch(query, params);
+
   try {
-    return await client.fetch<T>(query, params);
+    return schema.parse(data);
   } catch (err) {
-    console.error("Sanity fetch error:", err);
-    throw new Error("Failed to fetch Sanity data");
+    if (err instanceof z.ZodError) {
+      console.error("Zod validation failed:", err.flatten());
+      throw new Error(
+        `Validation failed: ${err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ")}`
+      );
+    }
+    throw err;
   }
 }
 
 /* ======================
-   PRODUCTS
+   TYPED SANITY HELPERS
    ====================== */
+export const getProducts = () =>
+  fetchAndValidate(queries.products, SchemaMap.products);
 
-export async function getProducts(): Promise<Product[]> {
-  return sanityFetch<Product[]>(queries.products);
-}
+export const getProductBySlug = (slug: string) =>
+  fetchAndValidate(queries.productBySlug, SchemaMap.productBySlug, { slug });
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-  return sanityFetch<Product | null>(queries.productBySlug, { slug });
-}
-
-export async function getProductsByCategory(
-  categorySlug: string
-): Promise<Product[]> {
-  return sanityFetch<Product[]>(queries.productsByCategory, {
-    category: categorySlug,
+export const getProductsByCategory = (category: string) =>
+  fetchAndValidate(queries.productsByCategory, SchemaMap.products, {
+    category,
   });
-}
 
-/* ======================
-   CATEGORIES
-   ====================== */
+export const getCategories = () =>
+  fetchAndValidate(queries.categories, SchemaMap.categories);
 
-export async function getCategories(): Promise<Category[]> {
-  return sanityFetch<Category[]>(queries.categories);
-}
+export const getCollections = () =>
+  fetchAndValidate(queries.collections, SchemaMap.collections);
 
-/* ======================
-   BLOG POSTS
-   ====================== */
+export const getTestimonials = () =>
+  fetchAndValidate(queries.testimonials, SchemaMap.testimonials);
 
-export async function getBlogPosts(): Promise<BlogPost[]> {
-  return sanityFetch<BlogPost[]>(queries.blogPosts);
-}
+export const getHeroBanners = () =>
+  fetchAndValidate(queries.heroBanners, SchemaMap.heroBanners);
 
-export async function getBlogPostBySlug(
-  slug: string
-): Promise<BlogPost | null> {
-  return sanityFetch<BlogPost | null>(queries.blogPostBySlug, { slug });
-}
+export const getBlogPosts = () =>
+  fetchAndValidate(queries.blogPosts, SchemaMap.blogPosts);
 
-/* ======================
-   COLLECTIONS
-   ====================== */
-
-export async function getCollections(): Promise<Collection[]> {
-  return sanityFetch<Collection[]>(queries.collections);
-}
-
-/* ======================
-   TESTIMONIALS
-   ====================== */
-
-export async function getTestimonials(): Promise<Testimonial[]> {
-  return sanityFetch<Testimonial[]>(queries.testimonials);
-}
-
-/* ======================
-   HERO BANNERS
-   ====================== */
-
-export async function getHeroBanners(): Promise<HeroBanner[]> {
-  return sanityFetch<HeroBanner[]>(queries.heroBanners);
-}
+export const getBlogPostBySlug = (slug: string) =>
+  fetchAndValidate(queries.blogPostBySlug, SchemaMap.blogPostBySlug, { slug });

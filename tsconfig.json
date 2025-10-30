@@ -2,11 +2,14 @@
   "compilerOptions": {
     /* === Core Settings === */
     "target": "ES2020",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-
     /* === Strict Type Checking === */
     "strict": true,
     "noImplicitAny": true,
@@ -14,28 +17,30 @@
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-
     /* === Build Performance === */
     "incremental": true,
     "skipLibCheck": true,
     "noEmit": true,
-
     /* === Interop / ES Modules === */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-
     /* === Path Aliases === */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
-
     /* === Next.js Plugin === */
-    "plugins": [{ "name": "next" }]
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "allowJs": true
   },
-
   /* === Included Files === */
   "include": [
     "next-env.d.ts",
@@ -43,9 +48,15 @@
     "**/*.tsx",
     "types/**/*.d.ts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    ".next\\dev/types/**/*.ts",
+    ".next\\dev/types/**/*.ts"
   ],
-
   /* === Excluded Folders === */
-  "exclude": ["node_modules", ".next", "dist", "build"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist",
+    "build"
+  ]
 }
