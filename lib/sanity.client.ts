@@ -7,8 +7,12 @@ export const client = createClient({
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   apiVersion: "2024-01-01",
   useCdn: true,
-  token: process.env.SANITY_API_TOKEN,
+  token: process.env.SANITY_API_TOKEN, // optional for read-only
 });
 
 const builder = imageUrlBuilder(client);
+
+/**
+ * Build a Sanity image URL
+ */
 export const urlFor = (source: Image | string) => builder.image(source);

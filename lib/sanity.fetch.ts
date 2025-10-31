@@ -6,20 +6,39 @@ import { queries } from "./sanity.queries";
 /* ======================
    GENERIC FETCH + VALIDATE
    ====================== */
+function removeNulls(obj: unknown): unknown {
+  if (obj === null) return undefined; // ✅ base case
+  if (Array.isArray(obj)) {
+    return obj.map(removeNulls);
+  }
+  if (typeof obj === "object" && obj !== null) {
+    const cleaned: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const newValue = removeNulls(value);
+      if (newValue !== undefined) cleaned[key] = newValue;
+    }
+    return cleaned;
+  }
+  return obj;
+}
+
 export async function fetchAndValidate<T extends z.ZodTypeAny>(
   query: string,
   schema: T,
   params: Record<string, unknown> = {}
 ): Promise<z.infer<T>> {
   const data = await client.fetch(query, params);
+  const cleaned = removeNulls(data);
 
   try {
-    return schema.parse(data);
+    return schema.parse(cleaned);
   } catch (err) {
     if (err instanceof z.ZodError) {
       console.error("Zod validation failed:", err.flatten());
       throw new Error(
-        `Validation failed: ${err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ")}`
+        `Validation failed: ${err.issues
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join(", ")}`
       );
     }
     throw err;

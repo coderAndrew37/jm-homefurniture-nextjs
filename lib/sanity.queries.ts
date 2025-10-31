@@ -19,12 +19,33 @@ export const queries = {
   }`,
 
   /* ===== PRODUCTS ===== */
-  products: groq`*[_type == "product"] | order(_createdAt desc) {
-    _id, name, slug, price, originalPrice, images,
-    category->{ _id, name, slug },
-    description, features, dimensions, materials, tags,
-    rating, reviews, inStock, featured, bestSeller
-  }`,
+  products: groq`*[_type == "product" && status == "active"] | order(_createdAt desc) {
+  _id,
+  name,
+  slug,
+  price,
+  originalPrice,
+  discountPercentage,
+  shortDescription,
+  description,
+  mainImage,
+  additionalImages,
+  category->{ _id, name, slug },
+  collections[]->{ _id, name, slug },
+  availableColors,
+  materials,
+  features,
+  dimensions,
+  weight,
+  rating,
+  stock,
+  sku,
+  isBrandNew,
+  assemblyRequired,
+  warranty,
+  status,
+  seo
+}`,
 
   productBySlug: groq`*[_type == "product" && slug.current == $slug][0] {
     _id, name, slug, price, originalPrice, images,

@@ -1,144 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
+
+import { Product } from "@/lib/sanity.schema";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 
-// Mock data - replace with your API
-const allProducts = [
-  {
-    id: 1,
-    slug: "maasai-inspired-sofa",
-    name: "Maasai Inspired Sofa",
-    price: 45000,
-    originalPrice: 52000,
-    image: "/sofa-1.jpg",
-    category: "living-room",
-    rating: 4.8,
-    reviews: 124,
-    isNew: true,
-    isBestSeller: true,
-    tags: ["sofa", "living-room", "maasai", "kenyan"],
-  },
-  {
-    id: 2,
-    slug: "modern-loveseat",
-    name: "Modern Loveseat",
-    price: 32000,
-    image: "/loveseat-1.jpg",
-    category: "living-room",
-    rating: 4.6,
-    reviews: 89,
-    tags: ["loveseat", "living-room", "modern"],
-  },
-  {
-    id: 3,
-    slug: "savannah-bed-frame",
-    name: "Savannah Bed Frame",
-    price: 67000,
-    originalPrice: 75000,
-    image: "/bed-1.jpg",
-    category: "bedroom",
-    rating: 4.7,
-    reviews: 156,
-    isBestSeller: true,
-    tags: ["bed", "bedroom", "savannah", "kenyan"],
-  },
-  {
-    id: 4,
-    slug: "nairobi-office-desk",
-    name: "Nairobi Office Desk",
-    price: 28900,
-    image: "/desk-1.jpg",
-    category: "office",
-    rating: 4.6,
-    reviews: 67,
-    isNew: true,
-    tags: ["desk", "office", "nairobi"],
-  },
-  {
-    id: 5,
-    slug: "kilimanjaro-dining-table",
-    name: "Kilimanjaro Dining Table",
-    price: 38500,
-    originalPrice: 45000,
-    image: "/dining-table-1.jpg",
-    category: "dining",
-    rating: 4.9,
-    reviews: 89,
-    isBestSeller: true,
-    tags: ["dining-table", "dining", "kilimanjaro"],
-  },
-  {
-    id: 6,
-    slug: "cozy-armchair",
-    name: "Cozy Armchair",
-    price: 18900,
-    image: "/armchair-1.jpg",
-    category: "living-room",
-    rating: 4.5,
-    reviews: 45,
-    tags: ["armchair", "living-room", "cozy"],
-  },
-  {
-    id: 7,
-    slug: "storage-cabinet",
-    name: "Storage Cabinet",
-    price: 24500,
-    image: "/cabinet-1.jpg",
-    category: "storage",
-    rating: 4.4,
-    reviews: 34,
-    tags: ["cabinet", "storage", "organization"],
-  },
-  {
-    id: 8,
-    slug: "outdoor-patio-set",
-    name: "Outdoor Patio Set",
-    price: 89500,
-    originalPrice: 99000,
-    image: "/outdoor-1.jpg",
-    category: "outdoor",
-    rating: 4.7,
-    reviews: 78,
-    tags: ["outdoor", "patio", "garden"],
-  },
-  // Add more products as needed...
-];
-
-const categories = [
-  { value: "all", label: "All Categories", count: allProducts.length },
-  {
-    value: "living-room",
-    label: "Living Room",
-    count: allProducts.filter((p) => p.category === "living-room").length,
-  },
-  {
-    value: "bedroom",
-    label: "Bedroom",
-    count: allProducts.filter((p) => p.category === "bedroom").length,
-  },
-  {
-    value: "dining",
-    label: "Dining",
-    count: allProducts.filter((p) => p.category === "dining").length,
-  },
-  {
-    value: "office",
-    label: "Office",
-    count: allProducts.filter((p) => p.category === "office").length,
-  },
-  {
-    value: "outdoor",
-    label: "Outdoor",
-    count: allProducts.filter((p) => p.category === "outdoor").length,
-  },
-  {
-    value: "storage",
-    label: "Storage",
-    count: allProducts.filter((p) => p.category === "storage").length,
-  },
-];
+interface ProductsClientProps {
+  initialProducts: Product[];
+}
 
 const sortOptions = [
   { value: "featured", label: "Featured" },
@@ -159,7 +29,9 @@ const priceRanges = [
   { value: "100000+", label: "Over KES 100,000" },
 ];
 
-export default function ProductsClient() {
+export default function ProductsClient({
+  initialProducts,
+}: ProductsClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -171,23 +43,32 @@ export default function ProductsClient() {
   const searchQuery = searchParams.get("search") || "";
   const itemsPerPage = 12;
 
+  // inside ProductsClient before filteredProducts useMemo
+
+  const getEffectivePrice = (product: Product): number => {
+    const base = product.price ?? 0;
+    if (product.discountPercentage && product.discountPercentage > 0) {
+      return Math.round(base * (1 - product.discountPercentage / 100));
+    }
+    return base;
+  };
+
   // Filter and sort products
-  const [filteredProducts, setFilteredProducts] = useState(allProducts);
+  const filteredProducts = useMemo(() => {
+    let filtered = [...initialProducts];
 
-  useEffect(() => {
-    let filtered = [...allProducts];
-
-    // Apply category filter
+    // Category
     if (categoryFilter !== "all") {
       filtered = filtered.filter(
-        (product) => product.category === categoryFilter
+        (p) => p.category?.slug?.current === categoryFilter
       );
     }
 
     // Apply price range filter
     if (priceRange !== "all") {
-      filtered = filtered.filter((product) => {
-        const price = product.price;
+      filtered = filtered.filter((p) => {
+        const price = getEffectivePrice(p);
+
         switch (priceRange) {
           case "0-15000":
             return price <= 15000;
@@ -208,9 +89,9 @@ export default function ProductsClient() {
     // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.tags.some((tag) =>
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.tags?.some((tag) =>
             tag.toLowerCase().includes(searchQuery.toLowerCase())
           )
       );
@@ -218,27 +99,46 @@ export default function ProductsClient() {
 
     // Apply sorting
     filtered.sort((a, b) => {
+      const pa = getEffectivePrice(a);
+      const pb = getEffectivePrice(b);
+
       switch (sortBy) {
-        case "newest":
-          return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
         case "price-low":
-          return a.price - b.price;
+          return pa - pb;
         case "price-high":
-          return b.price - a.price;
-        case "rating":
-          return b.rating - a.rating;
+          return pb - pa;
         case "name-asc":
           return a.name.localeCompare(b.name);
         case "name-desc":
           return b.name.localeCompare(a.name);
-        case "featured":
+        case "rating":
+          return (b.rating?.stars ?? 0) - (a.rating?.stars ?? 0);
         default:
-          return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
+          return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
       }
     });
 
-    setFilteredProducts(filtered);
-  }, [categoryFilter, sortBy, priceRange, searchQuery]);
+    return filtered;
+  }, [initialProducts, categoryFilter, priceRange, searchQuery, sortBy]);
+
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+
+    initialProducts.forEach((p) => {
+      const slug = p.category?.slug?.current ?? "uncategorized";
+      const name = p.category?.name ?? "Uncategorized";
+      const key = `${slug}|${name}`;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    });
+
+    return [
+      { value: "all", label: "All Categories", count: initialProducts.length },
+      ...Array.from(map.entries()).map(([key, count]) => {
+        const [slug, name] = key.split("|");
+        return { value: slug, label: name, count };
+      }),
+    ];
+  }, [initialProducts]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -253,18 +153,11 @@ export default function ProductsClient() {
     const params = new URLSearchParams(searchParams.toString());
 
     Object.entries(updates).forEach(([key, value]) => {
-      if (value === "" || value === "all") {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
+      if (value === "" || value === "all") params.delete(key);
+      else params.set(key, value);
     });
 
-    // Reset to page 1 when filters change
-    if (!updates.page) {
-      params.set("page", "1");
-    }
-
+    if (!updates.page) params.set("page", "1");
     router.push(`/products?${params.toString()}`, { scroll: false });
   };
 
@@ -490,7 +383,7 @@ export default function ProductsClient() {
                   )}
                   {searchQuery && (
                     <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                      Search: "{searchQuery}"
+                      Search: {searchQuery}
                       <button
                         onClick={() => updateSearchParams({ search: "" })}
                         className="hover:text-amber-900"
@@ -509,19 +402,27 @@ export default function ProductsClient() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                   {paginatedProducts.map((product) => (
                     <div
-                      key={product.id}
+                      key={product._id}
                       className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group border border-gray-200"
                     >
-                      <Link href={`/products/${product.slug}`}>
+                      <Link
+                        href={`/products/${product.slug?.current || ""}`}
+                        prefetch
+                      >
                         <div className="relative aspect-[4/3] overflow-hidden">
                           <Image
-                            src={product.image}
+                            src={
+                              (typeof product.mainImage === "string"
+                                ? product.mainImage
+                                : product.mainImage?.asset?.url) ||
+                              "/placeholder.png"
+                            }
                             alt={product.name}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                           <div className="absolute top-3 left-3 flex gap-2">
-                            {product.isNew && (
+                            {product.isBrandNew && (
                               <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
                                 New
                               </span>
@@ -546,23 +447,28 @@ export default function ProductsClient() {
 
                           <div className="flex items-center mb-3">
                             <div className="flex text-amber-400 text-sm">
-                              {"★".repeat(Math.floor(product.rating))}
+                              {"★".repeat(
+                                Math.floor(product.rating?.count ?? 0)
+                              )}
                               <span className="text-gray-300">
-                                {"★".repeat(5 - Math.floor(product.rating))}
+                                {"★".repeat(
+                                  5 - Math.floor(product.rating?.stars ?? 0)
+                                )}
                               </span>
                             </div>
                             <span className="text-sm text-gray-600 ml-2">
-                              ({product.reviews})
+                              ({product.reviews?.length ?? 0})
                             </span>
                           </div>
 
                           <div className="flex items-center gap-3 mb-3">
                             <span className="text-lg font-bold text-gray-900">
-                              KES {product.price.toLocaleString()}
+                              KES {(product.price ?? 0).toLocaleString()}
                             </span>
                             {product.originalPrice && (
                               <span className="text-sm text-gray-500 line-through">
-                                KES {product.originalPrice.toLocaleString()}
+                                KES{" "}
+                                {(product.originalPrice ?? 0).toLocaleString()}
                               </span>
                             )}
                           </div>
@@ -644,7 +550,7 @@ export default function ProductsClient() {
                   No products found
                 </h3>
                 <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  We couldn't find any products matching your filters. Try
+                  We couldn&apos;t find any products matching your filters. Try
                   adjusting your search criteria.
                 </p>
                 <button

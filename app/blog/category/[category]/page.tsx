@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { BlogPost } from "@/lib/sanity.schema";
 
 // Mock data - use the same blogPosts array from above
 
@@ -33,7 +34,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
   // Filter posts by category (you'll need to implement this logic)
   const categoryPosts = blogPosts.filter(
-    (post) =>
+    (post: BlogPost) =>
       post.category.toLowerCase().replace(" & ", "-").replace(" ", "-") ===
       params.category
   );

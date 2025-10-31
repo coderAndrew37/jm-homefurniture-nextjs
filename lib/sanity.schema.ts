@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /* ===========================
-   SHARED SANITY FIELD TYPES
+   Shared Sanity Field Types
    =========================== */
 export const SanityImage = z.object({
   _type: z.literal("image").optional(),
@@ -15,15 +15,21 @@ export const SanityImage = z.object({
 });
 
 /* ===========================
+  /* ===========================
    CATEGORY
    =========================== */
 export const CategorySchema = z.object({
   _id: z.string(),
   _type: z.literal("category").optional(),
-  name: z.string(),
-  slug: z.object({ current: z.string() }).optional(),
-  description: z.string().optional(),
-  productCount: z.number().int().nonnegative().optional(),
+  name: z.string().nullable().optional(),
+  slug: z
+    .object({
+      current: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+  description: z.string().nullable().optional(),
+  productCount: z.number().int().nonnegative().nullable().optional(),
 });
 export type Category = z.infer<typeof CategorySchema>;
 
@@ -33,51 +39,104 @@ export type Category = z.infer<typeof CategorySchema>;
 export const CollectionSchema = z.object({
   _id: z.string(),
   _type: z.literal("collection").optional(),
-  name: z.string(),
-  slug: z.object({ current: z.string() }).optional(),
-  description: z.string().optional(),
-  image: SanityImage.optional(),
+  name: z.string().nullable().optional(),
+  slug: z
+    .object({
+      current: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+  description: z.string().nullable().optional(),
+  image: SanityImage.nullable().optional(),
 });
 export type Collection = z.infer<typeof CollectionSchema>;
 
 /* ===========================
    PRODUCT
    =========================== */
+//
 export const ProductSchema = z.object({
   _id: z.string(),
   _type: z.literal("product").optional(),
   name: z.string(),
-  slug: z.object({ current: z.string() }).optional(),
-  price: z.number().optional(),
-  originalPrice: z.number().optional(),
-  shortDescription: z.string().optional(),
-  description: z.union([z.string(), z.array(z.unknown())]).optional(),
-  features: z.array(z.string()).optional(),
+  slug: z
+    .object({ current: z.string().nullable().optional() })
+    .nullable()
+    .optional(),
+
+  price: z.number().nullable().optional(),
+  originalPrice: z.number().nullable().optional(),
+  isBestSeller: z.boolean().nullable().optional(),
+  isFeatured: z.boolean().nullable().optional(),
+  discountPercentage: z.number().nullable().optional(),
+
+  shortDescription: z.string().nullable().optional(),
+  description: z
+    .union([z.string(), z.array(z.unknown())])
+    .nullable()
+    .optional(),
+
+  mainImage: SanityImage.nullable().optional(),
+  additionalImages: z.array(SanityImage).nullable().optional(),
+
+  category: CategorySchema.nullable().optional(),
+  collections: z.array(CollectionSchema).nullable().optional(),
+
+  availableColors: z.array(z.string()).nullable().optional(),
+  materials: z.string().nullable().optional(),
+  features: z.array(z.string()).nullable().optional(),
+
   dimensions: z
     .object({
-      width: z.string().optional(),
-      height: z.string().optional(),
-      depth: z.string().optional(),
+      width: z.string().nullable().optional(),
+      height: z.string().nullable().optional(),
+      depth: z.string().nullable().optional(),
     })
+    .nullable()
     .optional(),
-  materials: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  images: z.array(SanityImage).optional(),
-  mainImage: SanityImage.optional(),
-  category: CategorySchema.optional(),
-  inStock: z.boolean().optional(),
+
+  weight: z.string().nullable().optional(),
+
   rating: z
     .object({
-      stars: z.number().optional(),
-      count: z.number().optional(),
+      stars: z.number().nullable().optional(),
+      count: z.number().nullable().optional(),
     })
+    .nullable()
     .optional(),
-  reviews: z.number().optional(),
-  featured: z.boolean().optional(),
-  bestSeller: z.boolean().optional(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
+
+  stock: z.number().nullable().optional(),
+  sku: z.string().nullable().optional(),
+  isBrandNew: z.boolean().nullable().optional(),
+  assemblyRequired: z.boolean().nullable().optional(),
+  warranty: z.string().nullable().optional(),
+  status: z.enum(["active", "draft", "archived"]).nullable().optional(),
+
+  seo: z
+    .object({
+      metaTitle: z.string().nullable().optional(),
+      metaDescription: z.string().nullable().optional(),
+      keywords: z.array(z.string()).nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+
+  reviews: z
+    .array(
+      z.object({
+        _id: z.string(),
+        author: z.string().nullable().optional(),
+        rating: z.number().min(1).max(5).nullable().optional(),
+        comment: z.string().max(500).nullable().optional(),
+        createdAt: z.string().nullable().optional(),
+      })
+    )
+    .nullable()
+    .optional(),
+
+  tags: z.array(z.string()).nullable().optional(),
 });
+
 export type Product = z.infer<typeof ProductSchema>;
 
 /* ===========================
@@ -112,12 +171,25 @@ export type HeroBanner = z.infer<typeof HeroBannerSchema>;
 /* ===========================
    BLOG POST
    =========================== */
-const PortableTextBlockSchema = z.any();
+const PortableTextBlockSchema = z.object({
+  _type: z.string().optional(),
+  style: z.string().optional(),
+  children: z
+    .array(
+      z.object({
+        _type: z.string().optional(),
+        text: z.string().optional(),
+        marks: z.array(z.string()).optional(),
+      })
+    )
+    .optional(),
+});
+
 export const BlogPostSchema = z.object({
   _id: z.string(),
   _type: z.literal("post").optional(),
   title: z.string(),
-  slug: z.object({ current: z.string() }).optional(),
+  slug: z.object({ current: z.string() }),
   excerpt: z.string().optional(),
   mainImage: SanityImage.optional(),
   publishedAt: z.string().optional(),

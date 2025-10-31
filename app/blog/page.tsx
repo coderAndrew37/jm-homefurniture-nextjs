@@ -2,7 +2,9 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { groq } from "next-sanity";
-import { client, queries, urlFor } from "@/lib/sanity.client";
+import { client, urlFor } from "@/lib/sanity.client";
+import { queries } from "@/lib/sanity.queries";
+import { BlogPost, BlogPostSchema } from "@/lib/sanity.schema";
 
 export const metadata: Metadata = {
   title: "Blog - Home Styling Tips & Furniture Guides | Kenyan Furniture",
@@ -24,8 +26,11 @@ export default async function BlogPage() {
     getCategories(),
   ]);
 
-  const featuredPost = posts.find((post: any) => post.featured) || posts[0];
-  const otherPosts = posts.filter((post: any) => post._id !== featuredPost._id);
+  const featuredPost =
+    posts.find((post: BlogPost) => post.featured) || posts[0];
+  const otherPosts = posts.filter(
+    (post: BlogPost) => post._id !== featuredPost._id
+  );
   const popularPosts = posts.slice(0, 3);
 
   return (
@@ -129,7 +134,7 @@ export default async function BlogPage() {
                 Latest Articles
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {otherPosts.map((post: any) => (
+                {otherPosts.map((post: BlogPost) => (
                   <article
                     key={post._id}
                     className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300"
@@ -229,7 +234,7 @@ export default async function BlogPage() {
                   Popular Posts
                 </h3>
                 <div className="space-y-4">
-                  {popularPosts.map((post: any) => (
+                  {popularPosts.map((post: BlogPost) => (
                     <Link
                       key={post._id}
                       href={`/blog/${post.slug.current}`}
@@ -293,7 +298,9 @@ export default async function BlogPage() {
                   Popular Tags
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {Array.from(new Set(posts.flatMap((post: any) => post.tags)))
+                  {Array.from(
+                    new Set(posts.flatMap((post: BlogPost) => post.tags))
+                  )
                     .slice(0, 10)
                     .map((tag: string) => (
                       <Link

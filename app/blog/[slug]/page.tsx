@@ -263,7 +263,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
               You Might Also Like
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {relatedPosts.map((relatedPost: any) => (
+              {relatedPosts.map((relatedPost: BlogPost) => (
                 <Link
                   key={relatedPost._id}
                   href={`/blog/${relatedPost.slug.current}`}
