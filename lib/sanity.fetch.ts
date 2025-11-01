@@ -51,12 +51,31 @@ export async function fetchAndValidate<T extends z.ZodTypeAny>(
 export const getProducts = () =>
   fetchAndValidate(queries.products, SchemaMap.products);
 
-export const getProductBySlug = (slug: string) =>
-  fetchAndValidate(queries.productBySlug, SchemaMap.productBySlug, { slug });
+export const getProductBySlug = async (slug: string) => {
+  if (!slug || typeof slug !== "string") {
+    console.error("❌ getProductBySlug called without a valid slug");
+    throw new Error("Missing slug in getProductBySlug()");
+  }
+
+  return fetchAndValidate(queries.productBySlug, SchemaMap.productBySlug, {
+    slug,
+  });
+};
 
 export const getProductsByCategory = (category: string) =>
   fetchAndValidate(queries.productsByCategory, SchemaMap.products, {
     category,
+  });
+
+// 🏆 Best Sellers
+export const getBestSellers = () =>
+  fetchAndValidate(queries.bestSellers, SchemaMap.products);
+
+// 🤝 Related Products
+export const getRelatedProducts = (categoryId: string, excludeId: string) =>
+  fetchAndValidate(queries.relatedProducts, SchemaMap.products, {
+    categoryId,
+    excludeId,
   });
 
 export const getCategories = () =>

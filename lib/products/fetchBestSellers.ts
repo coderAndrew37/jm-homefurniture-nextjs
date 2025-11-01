@@ -1,14 +1,13 @@
 import { urlFor } from "../sanity.client";
-import { getProducts } from "../sanity.fetch";
+import { getBestSellers } from "../sanity.fetch";
 import { Product } from "../sanity.schema";
 
 /**
- * Fetch and normalize all active products
+ * Fetch all best-selling products
  */
-export async function fetchAllProducts(): Promise<Product[]> {
-  const products = await getProducts();
+export async function fetchBestSellers(): Promise<Product[]> {
+  const products = await getBestSellers();
 
-  // Normalize derived data
   return products.map((p) => ({
     ...p,
     effectivePrice: p.discountPercentage
@@ -16,6 +15,5 @@ export async function fetchAllProducts(): Promise<Product[]> {
       : p.price,
     isOnSale: !!p.discountPercentage && p.discountPercentage > 0,
     imageUrl: p.mainImage ? urlFor(p.mainImage).url() : undefined,
-    categoryName: p.category?.name ?? "Uncategorized",
   }));
 }

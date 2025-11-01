@@ -1,3 +1,4 @@
+import { urlFor } from "../sanity.client";
 import { getProductsByCategory } from "../sanity.fetch";
 import { Product } from "../sanity.schema";
 
@@ -16,6 +17,6 @@ export async function fetchProductsByCategory(
       ? Math.round(p.price! * (1 - p.discountPercentage / 100))
       : p.price,
     isOnSale: !!p.discountPercentage && p.discountPercentage > 0,
-    imageUrl: p.mainImage?.asset?.url,
+    imageUrl: p.mainImage ? urlFor(p.mainImage).url() : undefined,
   }));
 }

@@ -1,14 +1,18 @@
 import { urlFor } from "../sanity.client";
-import { getProducts } from "../sanity.fetch";
+import { getRelatedProducts } from "../sanity.fetch";
 import { Product } from "../sanity.schema";
 
 /**
- * Fetch and normalize all active products
+ * Fetch related products by category ID, excluding the current product
  */
-export async function fetchAllProducts(): Promise<Product[]> {
-  const products = await getProducts();
+export async function fetchRelatedProducts(
+  categoryId: string,
+  excludeId: string
+): Promise<Product[]> {
+  if (!categoryId) return [];
 
-  // Normalize derived data
+  const products = await getRelatedProducts(categoryId, excludeId);
+
   return products.map((p) => ({
     ...p,
     effectivePrice: p.discountPercentage
@@ -16,6 +20,5 @@ export async function fetchAllProducts(): Promise<Product[]> {
       : p.price,
     isOnSale: !!p.discountPercentage && p.discountPercentage > 0,
     imageUrl: p.mainImage ? urlFor(p.mainImage).url() : undefined,
-    categoryName: p.category?.name ?? "Uncategorized",
   }));
 }

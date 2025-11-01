@@ -83,6 +83,36 @@ export const queries = {
     bestSeller
   }`,
 
+  /* ✅ NEW: Best Sellers */
+  bestSellers: groq`*[_type == "product" && status == "active" && isBestSeller == true] | order(_createdAt desc) {
+    _id,
+    name,
+    slug,
+    price,
+    originalPrice,
+    mainImage,
+    additionalImages,
+    category->{ _id, "name": title, slug },
+    rating,
+    stock,
+    isBestSeller
+  }`,
+
+  /* ✅ NEW: Related Products */
+  relatedProducts: groq`*[_type == "product" && category._ref == $categoryId && _id != $excludeId][0...4] {
+    _id,
+    name,
+    slug,
+    price,
+    originalPrice,
+    mainImage,
+    additionalImages,
+    category->{ _id, "name": title, slug },
+    rating,
+    stock,
+    isBestSeller
+  }`,
+
   /* ===== CATEGORIES ===== */
   categories: groq`*[_type == "category"] {
     _id,
