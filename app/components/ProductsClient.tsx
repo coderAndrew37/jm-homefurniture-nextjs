@@ -406,7 +406,7 @@ export default function ProductsClient({
                       className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group border border-gray-200"
                     >
                       <Link
-                        href={`/products/${product.slug?.current || ""}`}
+                        href={`/products/detail/${product.slug?.current || ""}`}
                         prefetch
                       >
                         <div className="relative aspect-[4/3] overflow-hidden">

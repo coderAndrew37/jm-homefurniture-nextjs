@@ -20,54 +20,81 @@ export const queries = {
 
   /* ===== PRODUCTS ===== */
   products: groq`*[_type == "product" && status == "active"] | order(_createdAt desc) {
-  _id,
-  name,
-  slug,
-  price,
-  originalPrice,
-  discountPercentage,
-  shortDescription,
-  description,
-  mainImage,
-  additionalImages,
-  category->{ _id, name, slug },
-  collections[]->{ _id, name, slug },
-  availableColors,
-  materials,
-  features,
-  dimensions,
-  weight,
-  rating,
-  stock,
-  sku,
-  isBrandNew,
-  assemblyRequired,
-  warranty,
-  status,
-  seo
-}`,
+    _id,
+    name,
+    slug,
+    price,
+    originalPrice,
+    discountPercentage,
+    shortDescription,
+    description,
+    mainImage,
+    additionalImages,
+    category->{ _id, "name": title, slug },
+    collections[]->{ _id, "name": title, slug },
+    availableColors,
+    materials,
+    features,
+    dimensions,
+    weight,
+    rating,
+    stock,
+    sku,
+    isBrandNew,
+    assemblyRequired,
+    warranty,
+    status,
+    seo
+  }`,
 
   productBySlug: groq`*[_type == "product" && slug.current == $slug][0] {
-    _id, name, slug, price, originalPrice, images,
-    category->{ _id, name, slug },
-    description, features, dimensions, materials, tags,
-    rating, reviews, inStock, featured, bestSeller, body
+    _id,
+    name,
+    slug,
+    price,
+    originalPrice,
+    images,
+    category->{ _id, "name": title, slug },
+    description,
+    features,
+    dimensions,
+    materials,
+    tags,
+    rating,
+    reviews,
+    inStock,
+    featured,
+    bestSeller,
+    body
   }`,
 
   productsByCategory: groq`*[_type == "product" && category->slug.current == $category] | order(_createdAt desc) {
-    _id, name, slug, price, originalPrice, images,
-    category->{ name, slug }, rating, reviews, inStock, featured, bestSeller
+    _id,
+    name,
+    slug,
+    price,
+    originalPrice,
+    images,
+    category->{ _id, "name": title, slug },
+    rating,
+    reviews,
+    inStock,
+    featured,
+    bestSeller
   }`,
 
   /* ===== CATEGORIES ===== */
   categories: groq`*[_type == "category"] {
-    _id, name, slug, description,
+    _id,
+    "name": title,
+    slug,
+    description,
     "productCount": count(*[_type == "product" && references(^._id)])
   }`,
 
   /* ===== COLLECTIONS ===== */
   collections: groq`*[_type == "collection"] | order(_createdAt desc) {
-    _id, name, slug, description, image
+    _id, "name": title, slug, description, image
   }`,
 
   /* ===== TESTIMONIALS ===== */
