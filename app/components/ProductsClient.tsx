@@ -1,11 +1,10 @@
 "use client";
 
-import { urlFor } from "@/lib/sanity.client";
 import { Product } from "@/lib/sanity.schema";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
+import ProductCard from "./products/ProductCard";
 
 interface ProductsClientProps {
   initialProducts: Product[];
@@ -393,6 +392,28 @@ export default function ProductsClient({
                       </button>
                     </span>
                   )}
+                  {searchQuery && (
+                    <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                      Search: {searchQuery}
+                      <button
+                        onClick={() => updateSearchParams({ search: "" })}
+                        className="hover:text-amber-900"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {searchQuery && (
+                    <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                      Search: {searchQuery}
+                      <button
+                        onClick={() => updateSearchParams({ search: "" })}
+                        className="hover:text-amber-900"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -402,87 +423,7 @@ export default function ProductsClient({
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                   {paginatedProducts.map((product) => (
-                    <div
-                      key={product._id}
-                      className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group border border-gray-200"
-                    >
-                      <Link
-                        href={`/products/detail/${product.slug?.current || ""}`}
-                        prefetch
-                      >
-                        <div className="relative aspect-[4/3] overflow-hidden">
-                          <Image
-                            src={
-                              product.mainImage
-                                ? urlFor(product.mainImage)
-                                    .width(800)
-                                    .height(600)
-                                    .url()
-                                : "/placeholder.png"
-                            }
-                            alt={product.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-
-                          <div className="absolute top-3 left-3 flex gap-2">
-                            {product.isBrandNew && (
-                              <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                                New
-                              </span>
-                            )}
-                            {product.isBestSeller && (
-                              <span className="bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                                Best Seller
-                              </span>
-                            )}
-                            {product.originalPrice && (
-                              <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                                Sale
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="p-4">
-                          <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-amber-600 transition-colors line-clamp-2">
-                            {product.name}
-                          </h3>
-
-                          <div className="flex items-center mb-3">
-                            <div className="flex text-amber-400 text-sm">
-                              {"★".repeat(
-                                Math.floor(product.rating?.count ?? 0)
-                              )}
-                              <span className="text-gray-300">
-                                {"★".repeat(
-                                  5 - Math.floor(product.rating?.stars ?? 0)
-                                )}
-                              </span>
-                            </div>
-                            <span className="text-sm text-gray-600 ml-2">
-                              ({product.reviews?.length ?? 0})
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-3 mb-3">
-                            <span className="text-lg font-bold text-gray-900">
-                              KES {(product.price ?? 0).toLocaleString()}
-                            </span>
-                            {product.originalPrice && (
-                              <span className="text-sm text-gray-500 line-through">
-                                KES{" "}
-                                {(product.originalPrice ?? 0).toLocaleString()}
-                              </span>
-                            )}
-                          </div>
-
-                          <button className="w-full bg-gray-900 text-white py-2 rounded-lg font-semibold hover:bg-amber-600 transition-all duration-300 transform hover:scale-105 text-sm">
-                            Add to Cart
-                          </button>
-                        </div>
-                      </Link>
-                    </div>
+                    <ProductCard key={product._id} product={product} />
                   ))}
                 </div>
 

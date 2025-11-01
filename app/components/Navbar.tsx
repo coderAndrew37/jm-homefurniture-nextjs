@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import SearchBar from "./SearchBar";
+import { useCartStore } from "@/lib/store/useCartStore";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -62,8 +63,14 @@ export default function Navbar() {
 
   // Close mobile menu when route changes
   useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
+    // Only close if the mobile menu is open to avoid unnecessary synchronous state updates
+    if (isOpen) {
+      // Schedule the state update after paint to prevent cascading renders
+      requestAnimationFrame(() => setIsOpen(false));
+    }
+  }, [pathname, isOpen]);
+
+  const { totalItems } = useCartStore();
 
   return (
     <>
@@ -412,9 +419,11 @@ export default function Navbar() {
                   />
                 </svg>
                 <span>Shopping Cart</span>
-                <span className="bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  3
-                </span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
               </Link>
             </div>
           </div>

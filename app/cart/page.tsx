@@ -2,35 +2,41 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useApp } from "../context/CartContext";
+import { useCartStore } from "@/lib/store/useCartStore";
+import { urlFor } from "@/lib/sanity.client";
 
 export default function CartPage() {
-  const { state, updateQuantity, removeFromCart, clearCart } = useApp();
+  const { items, removeFromCart, clearCart } = useCartStore();
   const [selectedOption, setSelectedOption] = useState<
     "whatsapp" | "lipa-mdogo"
   >("whatsapp");
 
-  useEffect(() => {
-    document.title = `Cart (${state.cart.itemCount}) - Kenyan Furniture`;
-  }, [state.cart.itemCount]);
+  // Computed values
+  const itemCount = items.reduce((total, item) => total + item.quantity, 0);
+  const subtotal = items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+  const tax = subtotal * 0.14;
+  const total = subtotal + tax;
+
+  const updateQuantity = (id: string, newQty: number) => {
+    if (newQty < 1) return;
+    const updated = items.map((i) =>
+      i._id === id ? { ...i, quantity: newQty } : i
+    );
+    useCartStore.setState({ items: updated });
+  };
 
   const generateWhatsAppMessage = () => {
-    const itemsText = state.cart.items
+    const itemsText = items
       .map(
         (item) =>
-          `• ${item.name} - ${
-            item.quantity
-          } x KES ${item.price.toLocaleString()} = KES ${(
-            item.quantity * item.price
-          ).toLocaleString()}`
+          `• ${item.name} - ${item.quantity} x KES ${item.price.toLocaleString()} = KES ${(item.price * item.quantity).toLocaleString()}`
       )
       .join("\n");
 
-    const total = state.cart.total;
-    const tax = total * 0.14;
-    const finalTotal = total + tax;
-
-    return `Hello! I would like to order the following items from Kenyan Furniture:\n\n${itemsText}\n\nSubtotal: KES ${total.toLocaleString()}\nTax (14%): KES ${tax.toLocaleString()}\nTotal: KES ${finalTotal.toLocaleString()}\n\nPlease proceed with my order.`;
+    return `Hello! I'd like to order the following items from Kenyan Furniture:\n\n${itemsText}\n\nSubtotal: KES ${subtotal.toLocaleString()}\nTax (14%): KES ${tax.toLocaleString()}\nTotal: KES ${total.toLocaleString()}\n\nPlease proceed with my order.`;
   };
 
   const handleWhatsAppOrder = () => {
@@ -38,7 +44,11 @@ export default function CartPage() {
     window.open(`https://wa.me/254700123456?text=${message}`, "_blank");
   };
 
-  if (state.cart.items.length === 0) {
+  useEffect(() => {
+    document.title = `Cart (${itemCount}) - Kenyan Furniture`;
+  }, [itemCount]);
+
+  if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
@@ -80,7 +90,7 @@ export default function CartPage() {
               href="/wishlist"
               className="text-amber-600 hover:text-amber-700 font-medium"
             >
-              View Wishlist ({state.wishlist.length})
+              View Wishlist
             </Link>
             <button
               onClick={clearCart}
@@ -95,9 +105,9 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              {state.cart.items.map((item) => (
+              {items.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id}
                   className="border-b border-gray-200 last:border-b-0 p-6"
                 >
                   <div className="flex items-center space-x-4">
@@ -106,8 +116,12 @@ export default function CartPage() {
                       className="relative w-24 h-24 flex-shrink-0"
                     >
                       <Image
-                        src={item.image}
-                        alt={item.name}
+                        src={
+                          item.image
+                            ? urlFor(item.image).url()
+                            : "/placeholder.png"
+                        }
+                        alt={item.name ?? "Product image"}
                         fill
                         className="object-cover rounded-lg"
                       />
@@ -134,7 +148,7 @@ export default function CartPage() {
                       <div className="flex items-center border border-gray-300 rounded-lg">
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
+                            updateQuantity(item._id, item.quantity - 1)
                           }
                           className="w-10 h-10 flex items-center justify-center hover:bg-gray-100"
                           disabled={item.quantity <= 1}
@@ -146,7 +160,7 @@ export default function CartPage() {
                         </span>
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
+                            updateQuantity(item._id, item.quantity + 1)
                           }
                           className="w-10 h-10 flex items-center justify-center hover:bg-gray-100"
                         >
@@ -161,7 +175,7 @@ export default function CartPage() {
                       </div>
 
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item._id)}
                         className="text-red-600 hover:text-red-700 p-2"
                         title="Remove item"
                       >
@@ -183,11 +197,9 @@ export default function CartPage() {
 
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">
-                    Items ({state.cart.itemCount})
-                  </span>
+                  <span className="text-gray-600">Items ({itemCount})</span>
                   <span className="text-gray-900">
-                    KES {state.cart.total.toLocaleString()}
+                    KES {subtotal.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -197,7 +209,7 @@ export default function CartPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax (14%)</span>
                   <span className="text-gray-900">
-                    KES {(state.cart.total * 0.14).toLocaleString()}
+                    KES {tax.toLocaleString()}
                   </span>
                 </div>
                 <div className="border-t border-gray-200 pt-3 flex justify-between">
@@ -205,7 +217,7 @@ export default function CartPage() {
                     Total
                   </span>
                   <span className="font-semibold text-lg text-gray-900">
-                    KES {(state.cart.total * 1.14).toLocaleString()}
+                    KES {total.toLocaleString()}
                   </span>
                 </div>
               </div>
