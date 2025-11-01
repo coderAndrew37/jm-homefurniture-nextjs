@@ -1,12 +1,15 @@
 "use client";
-import Link from "next/link";
+import { CartItem, useCartStore } from "@/lib/store/useCartStore";
+import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import Image from "next/image";
-import { useApp } from "../context/CartContext";
+import Link from "next/link";
+import toast from "react-hot-toast";
 
 export default function WishlistPage() {
-  const { state, removeFromWishlist, moveToCart, addToCart } = useApp();
+  const { addToCart } = useCartStore();
+  const { wishlist, removeFromWishlist, moveToCart } = useWishlistStore();
 
-  if (state.wishlist.length === 0) {
+  if (wishlist.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
@@ -31,21 +34,41 @@ export default function WishlistPage() {
     );
   }
 
+  const handleAddToCart = (product: CartItem) => {
+    addToCart({ ...product, quantity: 1 });
+    toast.success(`${product.name} added to cart`);
+  };
+
+  const handleMoveToCart = (productId: string) => {
+    moveToCart(productId, addToCart);
+    toast.success("Moved to cart");
+  };
+
+  const handleRemoveFromWishlist = (productId: string) => {
+    removeFromWishlist(productId);
+    toast.success("Removed from wishlist");
+  };
+
+  const handleAddAllToCart = () => {
+    wishlist.forEach((product) => moveToCart(product._id, addToCart));
+    toast.success("All wishlist items added to cart");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
           <span className="text-gray-600">
-            {state.wishlist.length}{" "}
-            {state.wishlist.length === 1 ? "item" : "items"}
+            {wishlist.length} {wishlist.length === 1 ? "item" : "items"}
           </span>
         </div>
 
+        {/* Wishlist Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {state.wishlist.map((product) => (
+          {wishlist.map((product) => (
             <div
-              key={product.id}
+              key={product._id}
               className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group border border-gray-200"
             >
               <Link
@@ -53,7 +76,11 @@ export default function WishlistPage() {
                 className="relative block aspect-[4/3] overflow-hidden"
               >
                 <Image
-                  src={product.image}
+                  src={
+                    typeof product.image === "string"
+                      ? product.image
+                      : product.image || "/placeholder.png"
+                  }
                   alt={product.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -61,7 +88,7 @@ export default function WishlistPage() {
                 <button
                   onClick={(e) => {
                     e.preventDefault();
-                    removeFromWishlist(product.id);
+                    handleRemoveFromWishlist(product._id);
                   }}
                   className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-500 hover:text-white transition-colors"
                   title="Remove from wishlist"
@@ -80,7 +107,7 @@ export default function WishlistPage() {
 
                 <div className="flex items-center gap-3 mb-4">
                   <span className="text-lg font-bold text-gray-900">
-                    KES {product.price.toLocaleString()}
+                    KES {product.price?.toLocaleString() ?? "0"}
                   </span>
                   {product.originalPrice && (
                     <span className="text-sm text-gray-500 line-through">
@@ -91,13 +118,13 @@ export default function WishlistPage() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => addToCart(product)}
+                    onClick={() => handleAddToCart(product)}
                     className="flex-1 bg-gray-900 text-white py-2 rounded-lg font-semibold hover:bg-amber-600 transition-colors text-sm"
                   >
                     Add to Cart
                   </button>
                   <button
-                    onClick={() => moveToCart(product.id)}
+                    onClick={() => handleMoveToCart(product._id)}
                     className="flex-1 border-2 border-amber-500 text-amber-600 py-2 rounded-lg font-semibold hover:bg-amber-500 hover:text-white transition-colors text-sm"
                   >
                     Buy Now
@@ -109,12 +136,10 @@ export default function WishlistPage() {
         </div>
 
         {/* Bulk Actions */}
-        {state.wishlist.length > 0 && (
+        {wishlist.length > 0 && (
           <div className="mt-8 flex justify-between items-center">
             <button
-              onClick={() => {
-                state.wishlist.forEach((product) => moveToCart(product.id));
-              }}
+              onClick={handleAddAllToCart}
               className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-600 transition-colors"
             >
               Add All to Cart

@@ -7,6 +7,8 @@ import { toast } from "react-hot-toast";
 import { urlFor } from "@/lib/sanity.client";
 import { Product } from "@/lib/sanity.schema";
 import { useCartStore } from "@/lib/store/useCartStore";
+import { useWishlistStore } from "@/lib/store/useWishlistStore";
+import { mapProductToCartItem } from "@/lib/utils/mapProductToCartItem";
 
 interface ProductCardProps {
   product: Product;
@@ -14,7 +16,11 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCartStore();
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlistStore();
   const [quantity, setQuantity] = useState<number>(1);
+
+  // Check if product is already in wishlist
+  const isInWishlist = wishlist.some((item) => item._id === product._id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // prevent link navigation when clicking the button
@@ -33,11 +39,24 @@ export default function ProductCard({ product }: ProductCardProps) {
     toast.success(`${product.name} added to cart (${quantity}) 🛒`, {
       position: "bottom-center",
       duration: 3000,
-      style: {
-        background: "#1f2937",
-        color: "#fff",
-      },
+      style: { background: "#1f2937", color: "#fff" },
     });
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault(); // prevent navigation
+
+    if (isInWishlist) {
+      removeFromWishlist(product._id);
+      toast.success(`${product.name} removed from wishlist 💔`, {
+        position: "bottom-center",
+      });
+    } else {
+      addToWishlist(mapProductToCartItem(product));
+      toast.success(`${product.name} added to wishlist ❤️`, {
+        position: "bottom-center",
+      });
+    }
   };
 
   const decreaseQty = (e: React.MouseEvent) => {
@@ -64,6 +83,19 @@ export default function ProductCard({ product }: ProductCardProps) {
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
+
+          {/* Wishlist Button ❤️ */}
+          <button
+            onClick={handleWishlistToggle}
+            className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-colors ${
+              isInWishlist
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-white text-gray-700 hover:bg-amber-500 hover:text-white"
+            }`}
+            title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            {isInWishlist ? "❤️" : "🤍"}
+          </button>
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-2">

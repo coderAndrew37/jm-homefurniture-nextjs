@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SearchBar from "./SearchBar";
+import { useWishlistStore } from "@/lib/store/useWishlistStore";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -71,6 +72,7 @@ export default function Navbar() {
   }, [pathname, isOpen]);
 
   const itemCount = useCartStore((state) => state.totalItems());
+  const wishlistCount = useWishlistStore((state) => state.wishlist.length);
 
   return (
     <>
@@ -169,7 +171,7 @@ export default function Navbar() {
 
                 <Link
                   href="/wishlist"
-                  className="text-gray-700 hover:text-amber-600 transition-colors"
+                  className="text-gray-700 hover:text-amber-600 transition-colors relative"
                 >
                   <svg
                     className="w-6 h-6"
@@ -184,6 +186,11 @@ export default function Navbar() {
                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                   </svg>
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
                 </Link>
 
                 <Link
@@ -381,7 +388,7 @@ export default function Navbar() {
             <div className="flex items-center space-x-4 mb-6">
               <Link
                 href="/wishlist"
-                className="flex items-center space-x-2 text-gray-700 hover:text-amber-600 transition-colors"
+                className="flex items-center space-x-2 text-gray-700 hover:text-amber-600 transition-colors relative"
                 onClick={() => setIsOpen(false)}
               >
                 <svg
@@ -398,6 +405,12 @@ export default function Navbar() {
                   />
                 </svg>
                 <span>Wishlist</span>
+
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-3 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
               </Link>
             </div>
 

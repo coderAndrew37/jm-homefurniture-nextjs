@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { useApp } from "../context/CartContext";
+import { useState, useMemo } from "react";
+import { useCartStore } from "@/lib/store/useCartStore";
 
 export default function LipaMdogoPage() {
-  const { state } = useApp();
+  const { items } = useCartStore();
   const [selectedPlan, setSelectedPlan] = useState<number>(3);
 
   const plans = [
@@ -13,6 +13,14 @@ export default function LipaMdogoPage() {
     { months: 6, interest: 8 },
     { months: 12, interest: 12 },
   ];
+
+  // 🧮 Calculate totals
+  const subtotal = useMemo(
+    () => items.reduce((acc, item) => acc + item.price * item.quantity, 0),
+    [items]
+  );
+  const tax = subtotal * 0.14;
+  const total = subtotal + tax;
 
   const calculateInstallment = (
     total: number,
@@ -23,12 +31,28 @@ export default function LipaMdogoPage() {
     return Math.ceil(totalWithInterest / months);
   };
 
-  const total = state.cart.total * 1.14; // Including tax
   const monthlyPayment = calculateInstallment(
     total,
     selectedPlan,
     plans.find((p) => p.months === selectedPlan)?.interest || 0
   );
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
+        <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
+        <p className="text-gray-600 mb-6">
+          Add some products to your cart before applying for Lipa Mdogo Mdogo.
+        </p>
+        <Link
+          href="/products"
+          className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-600 transition"
+        >
+          Browse Products
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -49,15 +73,13 @@ export default function LipaMdogoPage() {
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Payment Plan */}
+          {/* Left side — Plans & Summary */}
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-6">
               Lipa Mdogo Mdogo
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              Spread your payments over time with our flexible installment
-              plans. Get your furniture now and pay in manageable monthly
-              payments.
+              Spread your payments over time with flexible installment plans.
             </p>
 
             {/* Order Summary */}
@@ -65,16 +87,17 @@ export default function LipaMdogoPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Order Summary
               </h2>
+
               <div className="space-y-2">
-                {state.cart.items.map((item) => (
+                {items.map((item) => (
                   <div
-                    key={item.id}
+                    key={item._id}
                     className="flex justify-between items-center"
                   >
                     <div className="flex items-center space-x-3">
                       <div className="relative w-12 h-12">
                         <Image
-                          src={item.image}
+                          src={item.image || "/placeholder.png"}
                           alt={item.name}
                           fill
                           className="object-cover rounded"
@@ -90,14 +113,15 @@ export default function LipaMdogoPage() {
                   </div>
                 ))}
               </div>
+
               <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>KES {state.cart.total.toLocaleString()}</span>
+                  <span>KES {subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (14%)</span>
-                  <span>KES {(state.cart.total * 0.14).toLocaleString()}</span>
+                  <span>KES {tax.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
@@ -167,7 +191,7 @@ export default function LipaMdogoPage() {
             </div>
           </div>
 
-          {/* Application Form */}
+          {/* Right side — Application Form */}
           <div>
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-4">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
@@ -182,7 +206,7 @@ export default function LipaMdogoPage() {
                   <input
                     type="text"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -194,7 +218,7 @@ export default function LipaMdogoPage() {
                   <input
                     type="tel"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="+254 700 123 456"
                   />
                 </div>
@@ -206,7 +230,7 @@ export default function LipaMdogoPage() {
                   <input
                     type="text"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="Enter your national ID number"
                   />
                 </div>
@@ -215,7 +239,7 @@ export default function LipaMdogoPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Employment Status
                   </label>
-                  <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                  <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent">
                     <option>Employed</option>
                     <option>Self-Employed</option>
                     <option>Student</option>
@@ -263,7 +287,7 @@ export default function LipaMdogoPage() {
                 </p>
               </form>
 
-              {/* Quick WhatsApp Option */}
+              {/* WhatsApp CTA */}
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <p className="text-center text-gray-600 mb-4">
                   Prefer instant approval?
