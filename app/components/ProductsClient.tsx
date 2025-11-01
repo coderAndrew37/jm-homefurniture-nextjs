@@ -1,5 +1,6 @@
 "use client";
 
+import { urlFor } from "@/lib/sanity.client";
 import { Product } from "@/lib/sanity.schema";
 import Image from "next/image";
 import Link from "next/link";
@@ -412,15 +413,18 @@ export default function ProductsClient({
                         <div className="relative aspect-[4/3] overflow-hidden">
                           <Image
                             src={
-                              (typeof product.mainImage === "string"
-                                ? product.mainImage
-                                : product.mainImage?.asset?.url) ||
-                              "/placeholder.png"
+                              product.mainImage
+                                ? urlFor(product.mainImage)
+                                    .width(800)
+                                    .height(600)
+                                    .url()
+                                : "/placeholder.png"
                             }
                             alt={product.name}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
+
                           <div className="absolute top-3 left-3 flex gap-2">
                             {product.isBrandNew && (
                               <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
