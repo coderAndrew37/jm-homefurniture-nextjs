@@ -1,9 +1,8 @@
 "use client";
-import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useState } from "react";
 import { useCartStore } from "@/lib/store/useCartStore";
-import { urlFor } from "@/lib/sanity.client";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function CartPage() {
   const { items, removeFromCart, clearCart } = useCartStore();
@@ -116,14 +115,11 @@ export default function CartPage() {
                       className="relative w-24 h-24 flex-shrink-0"
                     >
                       <Image
-                        src={
-                          item.image
-                            ? urlFor(item.image).url()
-                            : "/placeholder.png"
-                        }
-                        alt={item.name ?? "Product image"}
+                        src={item.image || "/placeholder.png"}
+                        alt={item.name}
                         fill
                         className="object-cover rounded-lg"
+                        sizes="(max-width: 768px) 100vw, 400px"
                       />
                     </Link>
 

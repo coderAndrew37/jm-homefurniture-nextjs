@@ -17,13 +17,14 @@ interface CartState {
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
-  totalItems: number;
+  totalItems: () => number;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+
       addToCart: (item) => {
         const existing = get().items.find((i) => i._id === item._id);
         if (existing) {
@@ -38,13 +39,17 @@ export const useCartStore = create<CartState>()(
           set({ items: [...get().items, item] });
         }
       },
+
       removeFromCart: (id) =>
         set({ items: get().items.filter((i) => i._id !== id) }),
+
       clearCart: () => set({ items: [] }),
-      get totalItems() {
-        return get().items.reduce((acc, i) => acc + i.quantity, 0);
-      },
+
+      totalItems: () => get().items.reduce((acc, i) => acc + i.quantity, 0),
     }),
-    { name: "cart-storage" }
+    {
+      name: "cart-storage",
+      partialize: (state) => ({ items: state.items }), // only persist cart items
+    }
   )
 );
