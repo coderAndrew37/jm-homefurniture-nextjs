@@ -42,6 +42,7 @@ export const CategorySchema = z.object({
     .optional(),
   imageUrl: z.string().nullable().optional(), // for flattened GROQ projections like `"imageUrl": image.asset->url`
   productCount: z.number().int().nonnegative().nullable().optional(),
+  isFeatured: z.boolean().nullable().optional(),
 });
 
 export type Category = z.infer<typeof CategorySchema>;
