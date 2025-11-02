@@ -144,16 +144,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   className="bg-white rounded-2xl shadow-lg overflow-hidden group"
                 >
                   <Link href={`/products/detail/${p.slug?.current || ""}`}>
-                    <div className="relative aspect-[4/3] overflow-hidden">
+                    <div className="relative aspect-4/3 overflow-hidden">
                       <Image
                         src={
-                          p.additionalImages?.[0]
-                            ? urlFor(p.additionalImages[0]).url()
-                            : "/placeholder.png"
+                          product.mainImage
+                            ? urlFor(product.mainImage).url()
+                            : product.additionalImages?.[0]
+                              ? urlFor(product.additionalImages[0]).url()
+                              : "/placeholder.png"
                         }
-                        alt={p.name}
+                        alt={product.name}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover"
                       />
                     </div>
                     <div className="p-6">

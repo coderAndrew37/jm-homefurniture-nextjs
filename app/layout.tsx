@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Footer from "./components/Footer";
-import Navbar from "./components/Navbar";
-import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import Footer from "./components/Footer";
+import NavbarWrapper from "./components/NavbarWrapper";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -100,7 +100,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
+        <NavbarWrapper />
         <main className="min-h-screen">
           {children}
           <Toaster />

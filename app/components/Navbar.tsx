@@ -7,28 +7,27 @@ import { useEffect, useRef, useState } from "react";
 import SearchBar from "./SearchBar";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 
-const navigation = [
-  { name: "Home", href: "/" },
-  {
-    name: "Shop",
-    href: "/products",
-    dropdown: [
-      { name: "All Products", href: "/products" },
-      { name: "Living Room", href: "/products/categories/living-room" },
-      { name: "Bedroom", href: "/products/categories/bedroom" },
-      { name: "Dining", href: "/products/categories/dining" },
-      { name: "Office", href: "/products/categories/office" },
-      { name: "Outdoor", href: "/products/categories/outdoor" },
-    ],
-  },
-  { name: "Collections", href: "/collections" },
-  { name: "Sale", href: "/sale", highlight: true },
-  { name: "Blog", href: "/blog" },
-  { name: "About", href: "/about" },
-  { name: "Contact", href: "/contact" },
-];
+interface NavbarProps {
+  categories: { name: string; href: string }[];
+}
 
-export default function Navbar() {
+export default function Navbar({ categories }: NavbarProps) {
+  const navigation = [
+    { name: "Home", href: "/" },
+    {
+      name: "Shop",
+      href: "/products",
+      dropdown: [
+        { name: "All Products", href: "/products" },
+        ...categories, // ✅ inject fetched categories here
+      ],
+    },
+    { name: "Collections", href: "/collections" },
+    { name: "Sale", href: "/sale", highlight: true },
+    { name: "Blog", href: "/blog" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" },
+  ];
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const mobileMenuRef = useRef(null);
