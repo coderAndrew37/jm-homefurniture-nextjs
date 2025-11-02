@@ -8,6 +8,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductInfo from "./ProductInfo"; // ✅ import new client component
 
+export const dynamicParams = true; // ✅ ensure dynamic routes get runtime params
+
 interface ProductPageProps {
   params: { slug: string };
 }

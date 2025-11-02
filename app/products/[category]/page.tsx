@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { Metadata } from "next";
-import { getProductsByCategory, getCategories } from "@/lib/sanity.fetch";
-import { Category, Product } from "@/lib/sanity.schema";
 import ProductCard from "@/app/components/products/ProductCard";
+import { getCategories, getProductsByCategory } from "@/lib/sanity.fetch";
+import { Category } from "@/lib/sanity.schema";
+import { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 interface CategoryPageProps {
   params: { category: string };
@@ -37,9 +37,20 @@ export async function generateStaticParams() {
     }));
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const categorySlug = params.category;
-  const products: Product[] = await getProductsByCategory(categorySlug);
+export default async function CategoryPage({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}) {
+  const resolvedParams = await params; // ✅ unwrap promise
+  const categorySlug = resolvedParams.category;
+
+  if (!categorySlug) {
+    console.error("❌ categorySlug is undefined. params:", resolvedParams);
+    notFound();
+  }
+
+  const products = await getProductsByCategory(categorySlug);
 
   if (!products || products.length === 0) {
     notFound();
