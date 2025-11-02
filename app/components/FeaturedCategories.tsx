@@ -3,10 +3,8 @@
 import { useRef, useEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Link from "next/link";
-import Image from "next/image";
 import { Category } from "@/lib/sanity.schema";
-
+import CategoryCard from "./cards/CategoryCard";
 gsap.registerPlugin(ScrollTrigger);
 
 interface FeaturedCategoriesProps {
@@ -61,34 +59,12 @@ export default function FeaturedCategories({
             {categories.map((category, index) => (
               <div
                 key={category._id}
-                ref={(el) => {
+                ref={(el: HTMLDivElement | null) => {
                   cardsRef.current[index] = el;
                 }}
-                className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
+                className="category-card"
               >
-                <Link href={`/products/${category.slug?.current || ""}`}>
-                  <div className="aspect-square relative overflow-hidden">
-                    <Image
-                      src={category.imageUrl || "/placeholder.png"}
-                      alt={category.name || "Category image"}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {category.name}
-                    </h3>
-                    <p className="text-gray-600 line-clamp-2">
-                      {category.description ||
-                        "Beautiful furniture for your home"}
-                    </p>
-                    <button className="mt-4 text-amber-600 font-semibold hover:text-amber-700 transition-colors duration-300">
-                      Explore →
-                    </button>
-                  </div>
-                </Link>
+                <CategoryCard category={category} layout="wide" />
               </div>
             ))}
           </div>
