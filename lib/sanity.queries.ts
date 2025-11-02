@@ -121,13 +121,22 @@ export const queries = {
   }`,
 
   /* ===== CATEGORIES ===== */
-  categories: groq`*[_type == "category"] {
-    _id,
-    "name": title,
-    slug,
-    description,
-    "productCount": count(*[_type == "product" && references(^._id)])
-  }`,
+  categories: groq`*[_type == "category"] | order(title asc) {
+  _id,
+  _type,
+  "name": title,
+  slug,
+  description,
+  image {
+    _type,
+    asset->{
+      _id,
+      url
+    }
+  },
+  "imageUrl": image.asset->url,
+  "productCount": count(*[_type == "product" && references(^._id)])
+}`,
 
   /* ===== COLLECTIONS ===== */
   collections: groq`*[_type == "collection"] | order(_createdAt desc) {
