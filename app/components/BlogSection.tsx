@@ -1,61 +1,146 @@
 "use client";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { gsap } from "gsap";
 import Link from "next/link";
-import Image from "next/image";
-
-const blogPosts = [
-  {
-    id: 1,
-    title: "5 Ways to Incorporate Kenyan Culture in Modern Home Design",
-    excerpt:
-      "Learn how to blend traditional Kenyan elements with contemporary furniture...",
-    image: "/blog-1.jpg",
-    date: "March 15, 2024",
-    readTime: "5 min read",
-  },
-  {
-    id: 2,
-    title: "The Ultimate Guide to Choosing the Right Sofa for Your Living Room",
-    excerpt:
-      "Everything you need to know about sofa sizes, materials, and styles...",
-    image: "/blog-2.jpg",
-    date: "March 12, 2024",
-    readTime: "7 min read",
-  },
-  {
-    id: 3,
-    title: "Sustainable Furniture: Why Kenyan Hardwood is the Best Choice",
-    excerpt:
-      "Discover the benefits of using locally sourced, sustainable materials...",
-    image: "/blog-3.jpg",
-    date: "March 8, 2024",
-    readTime: "4 min read",
-  },
-];
+import BlogCard from "./cards/BlogCard";
+import { BlogPost } from "@/lib/sanity.schema";
+import { getBlogPosts } from "@/lib/sanity.fetch";
 
 export default function BlogSection() {
   const sectionRef = useRef(null);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch blog posts from Sanity
   useEffect(() => {
-    gsap.fromTo(
-      ".blog-card",
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 70%",
-          end: "bottom 30%",
-          toggleActions: "play none none reverse",
-        },
+    const fetchBlogPosts = async () => {
+      try {
+        setLoading(true);
+        const posts = await getBlogPosts();
+        // Take only the first 3 posts for the section
+        setBlogPosts(posts.slice(0, 3));
+      } catch (err) {
+        console.error("Error fetching blog posts:", err);
+        setError("Failed to load blog posts");
+      } finally {
+        setLoading(false);
       }
-    );
+    };
+
+    fetchBlogPosts();
   }, []);
+
+  // Animation when posts are loaded
+  useEffect(() => {
+    if (blogPosts.length === 0 || loading) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".blog-card",
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 70%",
+            end: "bottom 30%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert(); // Cleanup
+  }, [blogPosts, loading]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Home Styling Tips
+            </h2>
+            <p className="text-xl text-gray-600">
+              Inspiration and advice for creating your dream space
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="animate-pulse">
+                <div className="bg-gray-200 rounded-2xl aspect-video mb-4"></div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Home Styling Tips
+            </h2>
+            <p className="text-xl text-gray-600">
+              Inspiration and advice for creating your dream space
+            </p>
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 max-w-md mx-auto">
+            <p className="text-amber-800 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-amber-500 text-white px-6 py-3 rounded-lg hover:bg-amber-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Empty state
+  if (blogPosts.length === 0) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Home Styling Tips
+            </h2>
+            <p className="text-xl text-gray-600">
+              Inspiration and advice for creating your dream space
+            </p>
+          </div>
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg mb-4">
+              No blog posts available at the moment.
+            </p>
+            <p className="text-gray-400">
+              Check back soon for home styling tips and furniture guides.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section ref={sectionRef} className="py-20 bg-white">
@@ -71,36 +156,14 @@ export default function BlogSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {blogPosts.map((post) => (
-            <article key={post.id} className="blog-card group">
-              <Link href={`/blog/${post.id}`}>
-                <div className="bg-gray-100 rounded-2xl overflow-hidden mb-4 aspect-video relative">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-
-                <div className="p-2">
-                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                    <span>{post.date}</span>
-                    <span>•</span>
-                    <span>{post.readTime}</span>
-                  </div>
-
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-amber-600 transition-colors duration-300">
-                    {post.title}
-                  </h3>
-
-                  <p className="text-gray-600 mb-4">{post.excerpt}</p>
-
-                  <button className="text-amber-600 font-semibold hover:text-amber-700 transition-colors duration-300">
-                    Read More →
-                  </button>
-                </div>
-              </Link>
-            </article>
+            <div key={post._id} className="blog-card">
+              <BlogCard
+                post={post}
+                layout="vertical"
+                showAuthor={false}
+                showCategory={false}
+              />
+            </div>
           ))}
         </div>
 

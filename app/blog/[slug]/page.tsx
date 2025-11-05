@@ -1,11 +1,11 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import { groq } from "next-sanity";
+import { client, urlFor } from "@/lib/sanity.client";
+import { BlogPost } from "@/lib/sanity.schema";
 import { PortableText } from "@portabletext/react";
-import { client, queries, urlFor } from "@/lib/sanity.client";
-import { BlogPost } from "@/app/types/sanity";
+import { Metadata } from "next";
+import { groq } from "next-sanity";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 interface BlogPageProps {
   params: {
@@ -13,8 +13,52 @@ interface BlogPageProps {
   };
 }
 
-async function getPost(slug: string) {
-  return await client.fetch(groq`${queries.blogPostBySlug}`, { slug });
+// Define proper TypeScript interfaces for Portable Text
+interface PortableTextImage {
+  _type: "image";
+  asset: {
+    _ref: string;
+    _type: "reference";
+  };
+  alt?: string;
+}
+
+interface PortableTextMark {
+  _type: string;
+  _key: string;
+  [key: string]: unknown;
+}
+
+interface PortableTextSpan {
+  _type: "span";
+  _key: string;
+  text: string;
+  marks?: string[];
+}
+
+interface PortableTextBlock {
+  _type: "block";
+  _key: string;
+  children: PortableTextSpan[];
+  markDefs?: PortableTextMark[];
+  style?: "normal" | "h1" | "h2" | "h3" | "blockquote";
+  listItem?: "bullet" | "number";
+}
+
+export const revalidate = 60;
+async function getPost(slug: string): Promise<BlogPost | null> {
+  return await client.fetch(
+    groq`*[_type == "post" && slug.current == $slug][0] {
+    _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime,
+    author->{ _id, _type, name, image, bio },
+    categories[]->{ _id, _type, title, slug },
+    tags, body, featured,
+    relatedPosts[]->{ 
+      _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime 
+    }
+  }`,
+    { slug }
+  );
 }
 
 export async function generateMetadata({
@@ -44,21 +88,20 @@ export async function generateMetadata({
 
 export async function generateStaticParams() {
   const posts = await client.fetch(groq`*[_type == "post"]{ slug }`);
-
-  return posts.map((post: BlogPost) => ({
+  return posts.map((post: { slug: { current: string } }) => ({
     slug: post.slug.current,
   }));
 }
 
-// Portable Text Components
+// Portable Text Components with proper types
 const portableTextComponents = {
   types: {
-    image: ({ value }: any) => {
+    image: ({ value }: { value: PortableTextImage }) => {
       return (
         <div className="relative aspect-video my-8 rounded-lg overflow-hidden">
           <Image
-            src={urlFor(value).width(800).height(450).url()}
-            alt="Blog post image"
+            src={urlFor(value.asset).width(800).height(450).url()}
+            alt={value.alt || "Blog post image"}
             fill
             className="object-cover"
           />
@@ -67,45 +110,62 @@ const portableTextComponents = {
     },
   },
   block: {
-    h2: ({ children }: any) => (
+    h1: ({ children }: { children?: React.ReactNode }) => (
+      <h1 className="text-4xl font-bold text-gray-900 mt-8 mb-4">{children}</h1>
+    ),
+    h2: ({ children }: { children?: React.ReactNode }) => (
       <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">{children}</h2>
     ),
-    h3: ({ children }: any) => (
+    h3: ({ children }: { children?: React.ReactNode }) => (
       <h3 className="text-xl font-bold text-gray-900 mt-6 mb-3">{children}</h3>
     ),
-    normal: ({ children }: any) => (
+    normal: ({ children }: { children?: React.ReactNode }) => (
       <p className="text-gray-700 leading-relaxed mb-4">{children}</p>
     ),
-    blockquote: ({ children }: any) => (
+    blockquote: ({ children }: { children?: React.ReactNode }) => (
       <blockquote className="border-l-4 border-amber-500 pl-4 italic text-gray-600 my-6">
         {children}
       </blockquote>
     ),
   },
   list: {
-    bullet: ({ children }: any) => (
+    bullet: ({ children }: { children?: React.ReactNode }) => (
       <ul className="list-disc list-inside space-y-2 mb-4">{children}</ul>
     ),
-    number: ({ children }: any) => (
+    number: ({ children }: { children?: React.ReactNode }) => (
       <ol className="list-decimal list-inside space-y-2 mb-4">{children}</ol>
     ),
   },
   listItem: {
-    bullet: ({ children }: any) => (
-      <li className="text-gray-700">{children}</li>
+    bullet: ({ children }: { children?: React.ReactNode }) => (
+      <li className="text-gray-700 ml-4">{children}</li>
+    ),
+    number: ({ children }: { children?: React.ReactNode }) => (
+      <li className="text-gray-700 ml-4">{children}</li>
     ),
   },
   marks: {
-    strong: ({ children }: any) => (
+    strong: ({ children }: { children?: React.ReactNode }) => (
       <strong className="font-semibold text-gray-900">{children}</strong>
     ),
-    em: ({ children }: any) => <em className="italic">{children}</em>,
-    link: ({ value, children }: any) => {
-      const href = value.href;
+    em: ({ children }: { children?: React.ReactNode }) => (
+      <em className="italic">{children}</em>
+    ),
+    link: ({
+      value,
+      children,
+    }: {
+      value?: { href: string };
+      children?: React.ReactNode;
+    }) => {
+      const href = value?.href || "#";
+      const isExternal = href.startsWith("http");
+
       return (
         <a
           href={href}
           className="text-amber-600 hover:text-amber-700 underline"
+          {...(isExternal && { target: "_blank", rel: "noopener noreferrer" })}
         >
           {children}
         </a>
@@ -120,8 +180,6 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
   if (!post) {
     notFound();
   }
-
-  const relatedPosts = post.relatedPosts || [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -172,12 +230,14 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
             <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white font-semibold">
               {post.author.name
                 .split(" ")
-                .map((n: string) => n[0])
+                .map((n) => n[0])
                 .join("")}
             </div>
             <div className="text-left">
               <p className="font-semibold text-gray-900">{post.author.name}</p>
-              <p className="text-gray-600 text-sm">{post.author.bio}</p>
+              {post.author.bio && (
+                <p className="text-gray-600 text-sm">{post.author.bio}</p>
+              )}
             </div>
           </div>
         </header>
@@ -203,17 +263,19 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mt-12 pt-8 border-t border-gray-200">
-          {post.tags.map((tag: string) => (
-            <Link
-              key={tag}
-              href={`/blog/tag/${tag}`}
-              className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-amber-500 hover:text-white transition-colors"
-            >
-              #{tag}
-            </Link>
-          ))}
-        </div>
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-12 pt-8 border-t border-gray-200">
+            {post.tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/blog/tag/${tag}`}
+                className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-amber-500 hover:text-white transition-colors"
+              >
+                #{tag}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Share Buttons */}
         <div className="flex items-center gap-4 mt-8 pt-8 border-t border-gray-200">
@@ -242,28 +304,32 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
             <div className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center text-white font-semibold text-xl flex-shrink-0">
               {post.author.name
                 .split(" ")
-                .map((n: string) => n[0])
+                .map((n) => n[0])
                 .join("")}
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 About {post.author.name}
               </h3>
-              <p className="text-gray-600 leading-relaxed">{post.author.bio}</p>
+              {post.author.bio && (
+                <p className="text-gray-600 leading-relaxed">
+                  {post.author.bio}
+                </p>
+              )}
             </div>
           </div>
         </div>
       </article>
 
       {/* Related Posts */}
-      {relatedPosts.length > 0 && (
+      {post.relatedPosts && post.relatedPosts.length > 0 && (
         <section className="bg-gray-50 py-16">
           <div className="max-w-6xl mx-auto px-4">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
               You Might Also Like
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {relatedPosts.map((relatedPost: BlogPost) => (
+              {post.relatedPosts.map((relatedPost) => (
                 <Link
                   key={relatedPost._id}
                   href={`/blog/${relatedPost.slug.current}`}
@@ -271,10 +337,14 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
-                      src={urlFor(relatedPost.mainImage)
-                        .width(400)
-                        .height(300)
-                        .url()}
+                      src={
+                        relatedPost.mainImage
+                          ? urlFor(relatedPost.mainImage)
+                              .width(400)
+                              .height(300)
+                              .url()
+                          : "/placeholder-image.jpg"
+                      }
                       alt={relatedPost.title}
                       fill
                       className="object-cover hover:scale-105 transition-transform duration-500"
@@ -283,10 +353,11 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
                   <div className="p-6">
                     <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                       <span>
-                        {new Date(relatedPost.publishedAt).toLocaleDateString(
-                          "en-KE",
-                          { month: "short", day: "numeric" }
-                        )}
+                        {relatedPost.publishedAt &&
+                          new Date(relatedPost.publishedAt).toLocaleDateString(
+                            "en-KE",
+                            { month: "short", day: "numeric" }
+                          )}
                       </span>
                       <span>•</span>
                       <span>{relatedPost.readTime}</span>

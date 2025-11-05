@@ -3,19 +3,23 @@ import { groq } from "next-sanity";
 export const queries = {
   /* ===== BLOG POSTS ===== */
   blogPosts: groq`*[_type == "post"] | order(publishedAt desc) {
-    _id, title, slug, excerpt, mainImage, publishedAt, readTime,
-    author->{ _id, name, image, bio },
-    categories[]->{ _id, name, slug },
+    _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime,
+    author->{ _id, _type, name, image, bio },
+    blogCategories[]->{ _id, _type, title, slug },
     tags, body, featured,
-    relatedPosts[]->{ _id, title, slug, excerpt, mainImage, publishedAt, readTime }
+    relatedPosts[]->{ 
+      _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime 
+    }
   }`,
 
   blogPostBySlug: groq`*[_type == "post" && slug.current == $slug][0] {
-    _id, title, slug, excerpt, mainImage, publishedAt, readTime,
-    author->{ _id, name, image, bio },
-    categories[]->{ _id, name, slug },
+    _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime,
+    author->{ _id, _type, name, image, bio },
+    blogCategories[]->{ _id, _type, title, slug },
     tags, body, featured,
-    relatedPosts[]->{ _id, title, slug }
+    relatedPosts[]->{ 
+      _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime 
+    }
   }`,
 
   /* ===== PRODUCTS ===== */

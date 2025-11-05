@@ -173,51 +173,75 @@ export type HeroBanner = z.infer<typeof HeroBannerSchema>;
 /* ===========================
    BLOG POST
    =========================== */
-const PortableTextBlockSchema = z.object({
-  _type: z.string().optional(),
+// Base portable text block schema
+export const PortableTextBlockSchema = z.object({
+  _type: z.string(),
+  _key: z.string(),
+  children: z.array(z.any()),
+  markDefs: z.array(z.any()).optional(),
   style: z.string().optional(),
-  children: z
-    .array(
-      z.object({
-        _type: z.string().optional(),
-        text: z.string().optional(),
-        marks: z.array(z.string()).optional(),
-      })
-    )
-    .optional(),
 });
 
+export const AuthorSchema = z.object({
+  _id: z.string(),
+  _type: z.literal("author"),
+  name: z.string(),
+  image: SanityImage.optional(),
+  bio: z.string().optional(),
+});
+
+//Blog Category schema
+export const BlogCategorySchema = z.object({
+  _id: z.string(),
+  _type: z.literal("category"),
+  title: z.string(),
+  slug: z.object({
+    _type: z.literal("slug"),
+    current: z.string(),
+  }),
+  postCount: z.number().int().nonnegative().optional(),
+});
+
+export type BlogCategory = z.infer<typeof BlogCategorySchema>;
+
+// Blog Post schema
 export const BlogPostSchema = z.object({
   _id: z.string(),
-  _type: z.literal("post").optional(),
+  _type: z.literal("post"),
   title: z.string(),
-  slug: z.object({ current: z.string() }),
-  excerpt: z.string().optional(),
-  mainImage: SanityImage.optional(),
-  publishedAt: z.string().optional(),
-  readTime: z.number().optional(),
-  author: z
-    .object({
-      _id: z.string().optional(),
-      name: z.string().optional(),
-      image: SanityImage.optional(),
-      bio: z.string().optional(),
-    })
-    .optional(),
-  categories: z.array(CategorySchema).optional(),
-  tags: z.array(z.string()).optional(),
-  body: z.array(PortableTextBlockSchema).optional(),
-  featured: z.boolean().optional(),
+  slug: z.object({
+    _type: z.literal("slug"),
+    current: z.string(),
+  }),
+  excerpt: z.string(),
+  mainImage: SanityImage,
+  publishedAt: z.string(),
+  readTime: z.string(), // Changed from number to string to match Sanity
+  author: AuthorSchema,
+  categories: z.array(BlogCategorySchema),
+  tags: z.array(z.string()),
+  body: z.array(PortableTextBlockSchema),
+  featured: z.boolean().optional().default(false),
   relatedPosts: z
     .array(
       z.object({
         _id: z.string(),
-        title: z.string().optional(),
-        slug: z.object({ current: z.string() }).optional(),
+        _type: z.literal("post"),
+        title: z.string(),
+        slug: z.object({
+          _type: z.literal("slug"),
+          current: z.string(),
+        }),
+        excerpt: z.string().optional(),
+        mainImage: SanityImage.optional(),
+        publishedAt: z.string().optional(),
+        readTime: z.string().optional(),
       })
     )
-    .optional(),
+    .optional()
+    .default([]),
 });
+
 export type BlogPost = z.infer<typeof BlogPostSchema>;
 
 /* ===========================
