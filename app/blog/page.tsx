@@ -130,7 +130,7 @@ export default async function BlogPage() {
                               className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group"
                             >
                               <span className="text-gray-700 group-hover:text-amber-600">
-                                {category.title}
+                                {category.name}
                               </span>
                               <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-sm">
                                 {category.postCount || 0}

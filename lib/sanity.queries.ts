@@ -5,7 +5,7 @@ export const queries = {
   blogPosts: groq`*[_type == "post"] | order(publishedAt desc) {
     _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime,
     author->{ _id, _type, name, image, bio },
-    blogCategories[]->{ _id, _type, title, slug },
+    blogCategories[]->{ _id, _type, name, slug }, // Changed title to name
     tags, body, featured,
     relatedPosts[]->{ 
       _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime 
@@ -15,11 +15,17 @@ export const queries = {
   blogPostBySlug: groq`*[_type == "post" && slug.current == $slug][0] {
     _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime,
     author->{ _id, _type, name, image, bio },
-    blogCategories[]->{ _id, _type, title, slug },
+    blogCategories[]->{ _id, _type, name, slug }, // Changed title to name
     tags, body, featured,
     relatedPosts[]->{ 
       _id, _type, title, slug, excerpt, mainImage, publishedAt, readTime 
     }
+  }`,
+
+  /* ===== BLOG CATEGORIES ===== */
+  blogCategories: groq`*[_type == "category"] | order(name asc) {
+    _id, _type, name, slug,
+    "postCount": count(*[_type == "post" && references(^._id)])
   }`,
 
   /* ===== PRODUCTS ===== */

@@ -194,7 +194,7 @@ export const AuthorSchema = z.object({
 export const BlogCategorySchema = z.object({
   _id: z.string(),
   _type: z.literal("category"),
-  title: z.string(),
+  name: z.string(), // Changed from title to name
   slug: z.object({
     _type: z.literal("slug"),
     current: z.string(),

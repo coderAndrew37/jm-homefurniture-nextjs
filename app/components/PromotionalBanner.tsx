@@ -45,15 +45,15 @@ export default function PromotionalBanner() {
               Up to 30% off on all furniture collections. Limited time offer!
             </p>
             <div className="flex justify-center items-center gap-4 mb-8">
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <div className="bg-white text-black bg-opacity-20 rounded-lg p-4">
                 <div className="text-3xl font-bold">05</div>
                 <div className="text-sm">Days</div>
               </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <div className="bg-white text-black bg-opacity-20 rounded-lg p-4">
                 <div className="text-3xl font-bold">12</div>
                 <div className="text-sm">Hours</div>
               </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <div className="bg-white text-black bg-opacity-20 rounded-lg p-4">
                 <div className="text-3xl font-bold">45</div>
                 <div className="text-sm">Minutes</div>
               </div>

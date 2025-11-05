@@ -99,7 +99,7 @@ export default function BlogCard({
               <>
                 <span>•</span>
                 <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                  {post.categories[0].title}
+                  {post.categories[0].name}
                 </span>
               </>
             )}
