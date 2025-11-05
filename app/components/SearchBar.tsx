@@ -1,4 +1,3 @@
-// app/components/SearchBar.tsx
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -47,6 +46,7 @@ export default function SearchBar() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const isProcessingClick = useRef(false);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function SearchBar() {
       const filtered = prev.filter(
         (item) => item.term.toLowerCase() !== term.toLowerCase()
       );
-      const updated = [newSearch, ...filtered].slice(0, 5); // Keep last 5
+      const updated = [newSearch, ...filtered].slice(0, 5);
       localStorage.setItem("recentSearches", JSON.stringify(updated));
       return updated;
     });
@@ -83,6 +83,7 @@ export default function SearchBar() {
   // Remove recent search
   const removeRecentSearch = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     setRecentSearches((prev) => {
       const updated = prev.filter((item) => item.id !== id);
       localStorage.setItem("recentSearches", JSON.stringify(updated));
@@ -90,52 +91,54 @@ export default function SearchBar() {
     });
   }, []);
 
-  const handleViewAllResults = useCallback(() => {
-    const q = queryRef.current?.trim();
-    if (q) {
-      saveRecentSearch(q);
-      router.push(`/products?search=${encodeURIComponent(q)}`);
-      setQuery("");
-      setResults([]);
-      setShowDropdown(false);
-      setActiveIndex(-1);
-    }
-  }, [saveRecentSearch, router]);
-
   // Clear all recent searches
-  const clearAllRecentSearches = useCallback(() => {
+  const clearAllRecentSearches = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     setRecentSearches([]);
     localStorage.removeItem("recentSearches");
   }, []);
 
-  // Debounced search handler
-  const fetchResults = debounce(async (q: string) => {
-    if (q.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+  // Debounced search handler - use useCallback to prevent recreation
+  const fetchResults = useCallback(
+    debounce(async (q: string) => {
+      if (q.trim().length < 2) {
+        setResults([]);
+        return;
+      }
 
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      setResults(data.products || []);
-    } catch (error) {
-      console.error("Search error:", error);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, 300);
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        setResults(data.products || []);
+      } catch (error) {
+        console.error("Search error:", error);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300),
+    []
+  );
 
   useEffect(() => {
-    fetchResults(query);
+    if (query.trim()) {
+      fetchResults(query);
+    } else {
+      setResults([]);
+    }
     return () => fetchResults.cancel();
   }, [query, fetchResults]);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside - FIXED
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (isProcessingClick.current) {
+        isProcessingClick.current = false;
+        return;
+      }
+
       if (
         resultsRef.current &&
         !resultsRef.current.contains(event.target as Node) &&
@@ -150,20 +153,55 @@ export default function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle select
+  // Handle product selection - FIXED
   const handleSelect = useCallback(
     (slug: string) => {
-      saveRecentSearch(queryRef.current);
+      isProcessingClick.current = true;
+      saveRecentSearch(query);
       router.push(`/products/${slug}`);
+      // Don't reset state immediately to allow navigation to complete
+      setTimeout(() => {
+        setQuery("");
+        setResults([]);
+        setShowDropdown(false);
+        setActiveIndex(-1);
+        isProcessingClick.current = false;
+      }, 100);
+    },
+    [query, saveRecentSearch, router]
+  );
+
+  // Handle view all results - FIXED
+  const handleViewAllResults = useCallback(() => {
+    isProcessingClick.current = true;
+    saveRecentSearch(query);
+    router.push(`/products?search=${encodeURIComponent(query)}`);
+    // Don't reset state immediately to allow navigation to complete
+    setTimeout(() => {
       setQuery("");
       setResults([]);
       setShowDropdown(false);
       setActiveIndex(-1);
-    },
-    [saveRecentSearch, router]
-  );
+      isProcessingClick.current = false;
+    }, 100);
+  }, [query, saveRecentSearch, router]);
 
-  // Keyboard navigation
+  // Handle recent search selection
+  const handleRecentSearchSelect = useCallback((term: string) => {
+    setQuery(term);
+    setShowDropdown(true);
+    inputRef.current?.focus();
+  }, []);
+
+  // Clear search
+  const clearSearch = useCallback(() => {
+    setQuery("");
+    setResults([]);
+    setActiveIndex(-1);
+    inputRef.current?.focus();
+  }, []);
+
+  // Keyboard navigation - FIXED
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!showDropdown) return;
@@ -183,28 +221,29 @@ export default function SearchBar() {
           e.preventDefault();
           if (activeIndex >= 0 && activeIndex < totalItems) {
             if (query) {
-              // Select search result
               handleSelect(results[activeIndex].slug.current);
             } else {
-              // Select recent search
-              const recentSearch = recentSearches[activeIndex];
-              setQuery(recentSearch.term);
-              inputRef.current?.focus();
+              handleRecentSearchSelect(recentSearches[activeIndex].term);
             }
           } else if (query.trim()) {
-            // View all results
             handleViewAllResults();
           }
           break;
         case "Escape":
           setShowDropdown(false);
           setActiveIndex(-1);
+          inputRef.current?.blur();
           break;
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    if (showDropdown) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [
     showDropdown,
     activeIndex,
@@ -213,26 +252,8 @@ export default function SearchBar() {
     query,
     handleSelect,
     handleViewAllResults,
+    handleRecentSearchSelect,
   ]);
-
-  // keep a ref to the latest query so callbacks can be stable
-  const queryRef = useRef(query);
-  useEffect(() => {
-    queryRef.current = query;
-  }, [query]);
-
-  const handleRecentSearchSelect = useCallback((term: string) => {
-    setQuery(term);
-    inputRef.current?.focus();
-    setShowDropdown(true);
-  }, []);
-
-  const clearSearch = useCallback(() => {
-    setQuery("");
-    setResults([]);
-    setActiveIndex(-1);
-    inputRef.current?.focus();
-  }, []);
 
   const getEffectivePrice = (product: SearchResult) => {
     if (product.discountPercentage && product.discountPercentage > 0) {
@@ -268,6 +289,7 @@ export default function SearchBar() {
           onChange={(e) => {
             setQuery(e.target.value);
             setActiveIndex(-1);
+            if (!showDropdown) setShowDropdown(true);
           }}
           onFocus={() => setShowDropdown(true)}
           className="w-full bg-transparent outline-none px-3 text-sm placeholder-gray-500"
@@ -276,6 +298,7 @@ export default function SearchBar() {
           <button
             onClick={clearSearch}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            type="button"
           >
             <X className="w-4 h-4 text-gray-400" />
           </button>
@@ -313,14 +336,15 @@ export default function SearchBar() {
                     </div>
 
                     {results.map((item, index) => (
-                      <div
+                      <button
                         key={item._id}
                         onClick={() => handleSelect(item.slug.current)}
-                        className={`flex items-center gap-3 p-4 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors ${
+                        className={`flex items-center gap-3 p-4 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors w-full text-left ${
                           index === activeIndex
                             ? "bg-amber-50"
                             : "hover:bg-gray-50"
                         }`}
+                        type="button"
                       >
                         {/* Product Image */}
                         <div className="relative flex-shrink-0">
@@ -392,7 +416,7 @@ export default function SearchBar() {
                               )}
                           </div>
                         </div>
-                      </div>
+                      </button>
                     ))}
 
                     {/* View All Results */}
@@ -400,12 +424,13 @@ export default function SearchBar() {
                       <button
                         onClick={handleViewAllResults}
                         className="w-full text-center text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors py-2"
+                        type="button"
                       >
                         View All Results
                       </button>
                     </div>
                   </>
-                ) : (
+                ) : query.length >= 2 && !loading ? (
                   // No Results
                   <div className="p-6 text-center">
                     <div className="text-4xl mb-3">🔍</div>
@@ -416,7 +441,7 @@ export default function SearchBar() {
                       Try adjusting your search terms
                     </p>
                   </div>
-                )}
+                ) : null}
               </>
             ) : (
               // Recent Searches
@@ -430,6 +455,7 @@ export default function SearchBar() {
                       <button
                         onClick={clearAllRecentSearches}
                         className="text-xs text-gray-500 hover:text-red-600 transition-colors"
+                        type="button"
                       >
                         Clear all
                       </button>
@@ -437,14 +463,15 @@ export default function SearchBar() {
                   </div>
 
                   {recentSearches.map((search, index) => (
-                    <div
+                    <button
                       key={search.id}
                       onClick={() => handleRecentSearchSelect(search.term)}
-                      className={`flex items-center justify-between p-3 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors ${
+                      className={`flex items-center justify-between p-3 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors w-full text-left ${
                         index === activeIndex
                           ? "bg-amber-50"
                           : "hover:bg-gray-50"
                       }`}
+                      type="button"
                     >
                       <div className="flex items-center gap-3">
                         <Clock className="w-4 h-4 text-gray-400" />
@@ -459,11 +486,12 @@ export default function SearchBar() {
                         <button
                           onClick={(e) => removeRecentSearch(search.id, e)}
                           className="p-1 hover:bg-gray-200 rounded transition-colors"
+                          type="button"
                         >
                           <X className="w-3 h-3 text-gray-400" />
                         </button>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </>
               )

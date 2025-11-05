@@ -7,64 +7,125 @@ export default function Hero() {
   const heroRef = useRef(null);
   const textRef = useRef(null);
   const ctaRef = useRef(null);
+  const trustRef = useRef(null);
 
   useEffect(() => {
     const tl = gsap.timeline();
 
     tl.fromTo(
       textRef.current,
-      { opacity: 0, y: 50 },
-      { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
-    ).fromTo(
-      ctaRef.current,
-      { opacity: 0, scale: 0.8 },
-      { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.7)" },
-      "-=0.5"
-    );
+      { opacity: 0, y: 60 },
+      { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }
+    )
+      .fromTo(
+        ctaRef.current,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
+        "-=0.4"
+      )
+      .fromTo(
+        trustRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6, ease: "power1.out" },
+        "-=0.2"
+      );
   }, []);
 
   return (
     <section
       ref={heroRef}
-      className="relative h-screen bg-cover bg-center flex items-center"
+      className="relative min-h-screen bg-cover bg-center flex items-center pt-20 pb-16 md:pt-0 md:pb-0"
       style={{
         backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('/hero-bg.jpg')",
+          "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('/hero-bg.jpg')",
       }}
     >
-      <div className="container mx-auto px-4">
-        <div ref={textRef} className="text-white max-w-2xl">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4">
-            Transform Your Space with{" "}
-            <span className="text-amber-500">Kenyan</span> Elegance
-          </h1>
-          <p className="text-xl mb-8 opacity-90">
-            Discover handcrafted furniture that combines modern design with
-            authentic Kenyan artistry
-          </p>
-          <div ref={ctaRef} className="flex gap-4">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-white max-w-2xl">
+          {/* Main Text Content */}
+          <div ref={textRef}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light mb-4 sm:mb-6 leading-tight">
+              Transform Your Space with{" "}
+              <span className="text-amber-400 font-normal block md:inline">
+                Kenyan Elegance
+              </span>
+            </h1>
+            <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 opacity-95 leading-relaxed font-light">
+              Handcrafted furniture that blends modern design with authentic
+              Kenyan artistry.
+              <span className="block mt-2 sm:mt-3 text-amber-100 font-normal">
+                Crafted for life&apos;s moments.
+              </span>
+            </p>
+          </div>
+
+          {/* CTA Buttons - Responsive */}
+          <div
+            ref={ctaRef}
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-12"
+          >
             <Link
               href="/shop"
-              className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105"
+              className="bg-amber-500 hover:bg-amber-400 text-gray-900 px-6 sm:px-8 md:px-10 py-4 sm:py-5 rounded-none font-medium text-base sm:text-lg transition-all duration-300 hover:shadow-lg sm:hover:shadow-xl hover:shadow-amber-500/20 text-center group"
             >
-              Shop Now
+              <span className="flex items-center justify-center gap-2 sm:gap-3">
+                Explore Collection
+                <svg
+                  className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </span>
             </Link>
+
             <Link
-              href="/collections"
-              className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300"
+              href="/about"
+              className="border border-white/50 text-white hover:bg-white/10 px-6 sm:px-8 md:px-10 py-4 sm:py-5 rounded-none font-light text-base sm:text-lg transition-all duration-300 text-center backdrop-blur-sm"
             >
-              View Collections
+              Our Craftsmanship
             </Link>
+          </div>
+
+          {/* Trust Indicators - Responsive */}
+          <div
+            ref={trustRef}
+            className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 md:gap-8 text-sm text-white/80 font-light"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 bg-amber-400 flex-shrink-0"></div>
+              <span className="text-sm sm:text-base">
+                Free Delivery Nationwide
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 bg-amber-400 flex-shrink-0"></div>
+              <span className="text-sm sm:text-base">
+                5-Year Craftsmanship Warranty
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 bg-amber-400 flex-shrink-0"></div>
+              <span className="text-sm sm:text-base">Sustainably Sourced</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+      {/* Scroll Indicator - Responsive */}
+      <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2">
         <div className="animate-bounce">
-          <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white rounded-full mt-2"></div>
-          </div>
+          <div className="w-px h-6 sm:h-8 bg-white/60 mx-auto"></div>
+          <p className="text-white/60 text-xs mt-1 sm:mt-2 text-center font-light tracking-widest">
+            SCROLL
+          </p>
         </div>
       </div>
     </section>
