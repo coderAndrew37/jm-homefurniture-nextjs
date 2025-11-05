@@ -3,17 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Category } from "@/lib/sanity.schema";
+import { urlFor } from "@/lib/sanity.client";
 
 interface CategoryCardProps {
   category: Category;
-  layout?: "square" | "wide"; // allows reuse in featured vs categories page
+  layout?: "square" | "wide";
 }
 
 export default function CategoryCard({
   category,
   layout = "square",
 }: CategoryCardProps) {
-  const image = category.imageUrl || "/placeholder.png";
+  // ✅ Use urlFor to generate the image URL dynamically
+  const imageUrl = category.imageUrl
+    ? urlFor(category.imageUrl).width(800).height(600).url()
+    : "/placeholder.png";
 
   return (
     <Link
@@ -22,11 +26,11 @@ export default function CategoryCard({
     >
       <div
         className={`relative overflow-hidden ${
-          layout === "square" ? "aspect-square" : "aspect-[4/3]"
+          layout === "square" ? "aspect-square" : "aspect-4/3"
         }`}
       >
         <Image
-          src={image}
+          src={imageUrl}
           alt={category.name || "Category image"}
           fill
           className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -37,7 +41,7 @@ export default function CategoryCard({
       <div className="p-6">
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-xl font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">
-            {category.name}
+            {category.name ?? "Untitled Category"}
           </h3>
           {category.productCount !== undefined && (
             <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">

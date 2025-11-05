@@ -121,20 +121,13 @@ export const queries = {
   }`,
 
   /* ===== CATEGORIES ===== */
-  categories: groq`*[_type == "category"] | order(title asc) {
+  categories: groq`*[_type == "category"] | order(name asc) {
   _id,
   _type,
-  "name": title,
+  name,
   slug,
   description,
-  image {
-    _type,
-    asset->{
-      _id,
-      url
-    }
-  },
-  "imageUrl": image.asset->url,
+  image,
   "productCount": count(*[_type == "product" && references(^._id)])
 }`,
 
@@ -152,4 +145,47 @@ export const queries = {
   heroBanners: groq`*[_type == "heroBanner" && active == true] | order(_createdAt desc) {
     _id, headline, subheadline, ctaText, ctaLink, backgroundImage, active
   }`,
+
+  /* ===== SEARCH + FILTERED PRODUCTS ===== */
+  searchAndFilterProducts: groq`
+  *[
+    _type == "product" &&
+    status == "active" &&
+
+    // ✅ Search matching
+    (
+      !defined($searchQuery) ||
+      name match $searchQuery + "*" ||
+      shortDescription match $searchQuery + "*" ||
+      description match $searchQuery + "*" ||
+      category->name match $searchQuery + "*" ||
+      materials match $searchQuery + "*" ||
+      $searchQuery in tags[] ||
+      count(collections[@->name match $searchQuery + "*"]) > 0
+    ) &&
+
+    // ✅ Category filter
+    (!defined($category) || category->slug.current == $category) &&
+
+    // ✅ Collection filter
+    (!defined($collection) || count(collections[@->slug.current == $collection]) > 0)
+  ]
+  | order(_createdAt desc) {
+    _id,
+    name,
+    slug,
+    price,
+    originalPrice,
+    discountPercentage,
+    shortDescription,
+    mainImage,
+    additionalImages,
+    category->{ _id, name, slug },
+    collections[]->{ _id, name, slug },
+    rating,
+    stock,
+    isBestSeller,
+    isFeatured
+  }
+`,
 };

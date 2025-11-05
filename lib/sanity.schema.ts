@@ -12,6 +12,7 @@ export const SanityImage = z.object({
 });
 
 /* ===========================
+
   /* ===========================
    CATEGORY
    =========================== */
@@ -26,25 +27,12 @@ export const CategorySchema = z.object({
     .nullable()
     .optional(),
   description: z.string().nullable().optional(),
-  image: z
-    .object({
-      asset: z
-        .object({
-          _ref: z.string().nullable().optional(),
-          _type: z.literal("reference").optional(),
-          url: z.string().optional().nullable(), // in case your GROQ query expands to url
-        })
-        .nullable()
-        .optional(),
-      _type: z.literal("image").optional(),
-    })
-    .nullable()
-    .optional(),
-  imageUrl: z.string().nullable().optional(), // for flattened GROQ projections like `"imageUrl": image.asset->url`
-  productCount: z.number().int().nonnegative().nullable().optional(),
-  isFeatured: z.boolean().nullable().optional(),
-});
 
+  // ✅ Match ProductSchema’s style: allow null or undefined
+  image: SanityImage.nullable().optional(),
+
+  productCount: z.number().int().nonnegative().nullable().optional(),
+});
 export type Category = z.infer<typeof CategorySchema>;
 
 /* ===========================

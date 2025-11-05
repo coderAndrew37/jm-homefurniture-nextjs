@@ -8,9 +8,22 @@ export const metadata: Metadata = {
     "Browse our complete collection of quality furniture for every room in your home",
 };
 
-export default async function ProductsPage() {
-  // Fetch products on the server
-  const products = await fetchAllProducts();
+interface ProductsPageProps {
+  searchParams?: {
+    search?: string;
+    category?: string;
+    collection?: string;
+  };
+}
+
+export default async function ProductsPage({
+  searchParams,
+}: ProductsPageProps) {
+  const products = await fetchAllProducts({
+    search: searchParams?.search,
+    category: searchParams?.category,
+    collection: searchParams?.collection,
+  });
 
   return <ProductsClient initialProducts={products} />;
 }

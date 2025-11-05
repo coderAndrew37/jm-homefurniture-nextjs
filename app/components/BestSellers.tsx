@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Product } from "@/lib/sanity.schema";
 import ProductCard from "./products/ProductCard";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -58,13 +59,13 @@ export default function BestSellers({ products }: BestSellersProps) {
         )}
 
         <div className="text-center mt-12">
-          <a
-            href="/shop"
+          <Link
+            href="/products"
             className="inline-flex items-center gap-2 bg-amber-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-amber-600 transition-all duration-300 transform hover:scale-105"
           >
             View All Products
             <span className="text-lg">→</span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

@@ -217,7 +217,7 @@ export default function ProductsClient({
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <div className="lg:w-64 flex-shrink-0">
+          <div className="lg:w-64 shrink-0">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-4">
               {/* Categories Filter */}
               <div className="mb-8">
