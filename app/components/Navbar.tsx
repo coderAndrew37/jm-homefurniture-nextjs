@@ -289,6 +289,7 @@ export default function Navbar({ categories }: NavbarProps) {
             <button
               onClick={() => setIsOpen(false)}
               className="p-2 rounded-lg text-gray-700 hover:bg-gray-100"
+              type="button"
             >
               <svg
                 className="w-6 h-6"

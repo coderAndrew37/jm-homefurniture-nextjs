@@ -15,8 +15,8 @@ export default function CategoryCard({
   layout = "square",
 }: CategoryCardProps) {
   // ✅ Use urlFor to generate the image URL dynamically
-  const imageUrl = category.imageUrl
-    ? urlFor(category.imageUrl).width(800).height(600).url()
+  const imageUrl = category.image
+    ? urlFor(category.image).width(800).height(600).url()
     : "/placeholder.png";
 
   return (
