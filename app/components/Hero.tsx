@@ -67,7 +67,7 @@ export default function Hero() {
               className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-12 justify-center items-center"
             >
               <Link
-                href="/shop"
+                href="/products"
                 className="bg-amber-500 hover:bg-amber-400 text-gray-900 px-6 sm:px-8 md:px-10 py-4 sm:py-5 rounded-none font-medium text-base sm:text-lg transition-all duration-300 hover:shadow-lg sm:hover:shadow-xl hover:shadow-amber-500/20 text-center group min-w-[200px] sm:min-w-[220px]"
               >
                 <span className="flex items-center justify-center gap-2 sm:gap-3">

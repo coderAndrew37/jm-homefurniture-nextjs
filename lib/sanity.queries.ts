@@ -146,8 +146,8 @@ export const queries = {
     isBestSeller
   }`,
 
-  /* ===== CATEGORIES ===== */
-  categories: groq`
+ /* ===== CATEGORIES ===== */
+categories: groq`
   *[_type == "category"] | order(name asc) {
     _id,
     _type,
@@ -157,16 +157,18 @@ export const queries = {
       "current": slug.current
     },
     description,
-    // Ensure image always returns consistent shape
+    // ✅ Include full image object with alt text if available
     "image": select(
-      defined(image) => image,
+      defined(image) => {
+        ...image,
+        "alt": coalesce(image.alt, name)
+      },
       null
     ),
-    // Always return a number, even if 0
+    // ✅ Always return a number, even if 0
     "productCount": count(*[_type == "product" && references(^._id)]) || 0
   }
 `,
-
 
   /* ===== COLLECTIONS ===== */
   collections: groq`*[_type == "collection"] | order(_createdAt desc) {

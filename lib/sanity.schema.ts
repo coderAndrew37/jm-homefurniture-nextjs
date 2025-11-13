@@ -9,7 +9,9 @@ export const SanityImage = z.object({
     _ref: z.string(),
     _type: z.literal("reference"),
   }),
-});
+  alt: z.string().nullable().optional(), // ✅ add alt text
+})
+
 
 /* ===========================
 
