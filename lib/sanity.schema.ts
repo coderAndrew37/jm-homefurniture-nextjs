@@ -27,12 +27,10 @@ export const CategorySchema = z.object({
     .nullable()
     .optional(),
   description: z.string().nullable().optional(),
-
-  // ✅ Match ProductSchema’s style: allow null or undefined
   image: SanityImage.nullable().optional(),
-
-  productCount: z.number().int().nonnegative().nullable().optional(),
+  productCount: z.number().int().nonnegative().default(0),
 });
+
 export type Category = z.infer<typeof CategorySchema>;
 
 /* ===========================

@@ -3,7 +3,7 @@ import { getCategories } from "@/lib/sanity.fetch";
 import CategoryCard from "../components/cards/CategoryCard";
 
 export const metadata: Metadata = {
-  title: "Product Categories - Kenyan Furniture Store",
+  title: "Product Categories - JM Home Furniture Store",
   description:
     "Browse our complete collection of furniture categories for every room in your home",
 };

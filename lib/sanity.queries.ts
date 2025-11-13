@@ -57,48 +57,64 @@ export const queries = {
     seo
   }`,
 
-  productBySlug: groq`*[_type == "product" && slug.current == $slug][0] {
-  _id,
-  name,
-  slug,
-  price,
-  originalPrice,
-  discountPercentage,
-  shortDescription,
-  description,
-  mainImage,
-  additionalImages,
-  category->{ _id, "name": title, slug },
-  collections[]->{ _id, "name": title, slug },
-  availableColors,
-  materials,
-  features,
-  dimensions,
-  weight,
-  rating,
-  stock,
-  sku,
-  isBrandNew,
-  assemblyRequired,
-  warranty,
-  status,
-  seo
-}`,
+ productsByCategory: groq`
+    *[_type == "product" && category->slug.current == $category] | order(_createdAt desc) {
+      _id,
+      name,
+      slug,
+      price,
+      originalPrice,
+      discountPercentage,
+      shortDescription,
+      description,
+      mainImage,
+      additionalImages,
+      category->{ _id, "name": title, slug },
+      collections[]->{ _id, "name": title, slug },
+      availableColors,
+      materials,
+      features,
+      dimensions,
+      weight,
+      rating,
+      stock,
+      sku,
+      isBestSeller,
+      isFeatured,
+      status,
+      seo
+    }
+  `,
 
-  productsByCategory: groq`*[_type == "product" && category->slug.current == $category] | order(_createdAt desc) {
-    _id,
-    name,
-    slug,
-    price,
-    originalPrice,
-    images,
-    category->{ _id, "name": title, slug },
-    rating,
-    reviews,
-    inStock,
-    featured,
-    bestSeller
-  }`,
+  productBySlug: groq`
+    *[_type == "product" && slug.current == $slug][0] {
+      _id,
+      name,
+      slug,
+      price,
+      originalPrice,
+      discountPercentage,
+      shortDescription,
+      description,
+      mainImage,
+      additionalImages,
+      category->{ _id, "name": title, slug },
+      collections[]->{ _id, "name": title, slug },
+      availableColors,
+      materials,
+      features,
+      dimensions,
+      weight,
+      rating,
+      stock,
+      sku,
+      isBrandNew,
+      assemblyRequired,
+      warranty,
+      status,
+      seo
+    }
+  `,
 
   /* ✅ NEW: Best Sellers */
   bestSellers: groq`*[_type == "product" && status == "active" && isBestSeller == true] | order(_createdAt desc) {
@@ -131,15 +147,26 @@ export const queries = {
   }`,
 
   /* ===== CATEGORIES ===== */
-  categories: groq`*[_type == "category"] | order(name asc) {
-  _id,
-  _type,
-  name,
-  slug,
-  description,
-  image,
-  "productCount": count(*[_type == "product" && references(^._id)])
-}`,
+  categories: groq`
+  *[_type == "category"] | order(name asc) {
+    _id,
+    _type,
+    name,
+    // Normalize slug shape
+    "slug": {
+      "current": slug.current
+    },
+    description,
+    // Ensure image always returns consistent shape
+    "image": select(
+      defined(image) => image,
+      null
+    ),
+    // Always return a number, even if 0
+    "productCount": count(*[_type == "product" && references(^._id)]) || 0
+  }
+`,
+
 
   /* ===== COLLECTIONS ===== */
   collections: groq`*[_type == "collection"] | order(_createdAt desc) {
