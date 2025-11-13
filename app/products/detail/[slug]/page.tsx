@@ -6,9 +6,10 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ProductInfo from "./ProductInfo"; // ✅ import new client component
+import ProductInfo from "./ProductInfo";
+import ProductCard from "@/app/components/products/ProductCard";
 
-export const dynamicParams = true; // ✅ ensure dynamic routes get runtime params
+export const dynamicParams = true;
 
 interface ProductPageProps {
   params: { slug: string };
@@ -95,21 +96,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div>
               <div className="bg-white rounded-2xl p-4 mb-4">
                 <div className="relative aspect-square rounded-lg overflow-hidden">
-                 <Image
-  src={
-    product.mainImage
-      ? urlFor(product.mainImage).url()
-      : product.additionalImages?.[0]
-        ? urlFor(product.additionalImages[0]).url()
-        : "/placeholder.png"
-  }
-  alt={product.mainImage?.alt || product.name || "Product image"}
-  fill
-  className="object-cover"
-/>
-
+                  <Image
+                    src={
+                      product.mainImage
+                        ? urlFor(product.mainImage).url()
+                        : product.additionalImages?.[0]
+                          ? urlFor(product.additionalImages[0]).url()
+                          : "/placeholder.png"
+                    }
+                    alt={product.mainImage?.alt || product.name || "Product image"}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               </div>
+
               <div className="grid grid-cols-4 gap-2">
                 {product.additionalImages?.map((image, i) => (
                   <div
@@ -144,42 +145,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {relatedProducts.map((p: Product) => (
-                <div
-                  key={p._id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden group"
-                >
-                  <Link href={`/products/detail/${p.slug?.current || ""}`}>
-                    <div className="relative aspect-4/3 overflow-hidden">
-                      <Image
-                        src={
-                          product.mainImage
-                            ? urlFor(product.mainImage).url()
-                            : product.additionalImages?.[0]
-                              ? urlFor(product.additionalImages[0]).url()
-                              : "/placeholder.png"
-                        }
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-amber-600 transition-colors">
-                        {p.name}
-                      </h3>
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold text-gray-900">
-                          KES {(p.price ?? 0).toLocaleString()}
-                        </span>
-                        {p.originalPrice && (
-                          <span className="text-gray-500 line-through">
-                            KES {p.originalPrice.toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                </div>
+                <ProductCard key={p._id} product={p} />
               ))}
             </div>
           </div>
