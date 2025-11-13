@@ -69,37 +69,40 @@ export default function Testimonials() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <div
-              key={testimonial.id}
-              ref={(el) => (cardsRef.current[index] = el)}
-              className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <div className="flex items-center mb-4">
-                <div className="flex text-amber-400 text-xl">
-                  {"★".repeat(testimonial.rating)}
-                </div>
-              </div>
+         {testimonials.map((testimonial, index) => (
+  <div
+    key={testimonial.id}
+    ref={(el) => {
+      cardsRef.current[index] = el;
+    }}
+    className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center mb-4">
+      <div className="flex text-amber-400 text-xl">
+        {"★".repeat(testimonial.rating)}
+      </div>
+    </div>
 
-              <p className="text-gray-700 text-lg mb-6 italic">
-                "{testimonial.text}"
-              </p>
+    <p className="text-gray-700 text-lg mb-6 italic">
+      "{testimonial.text}"
+    </p>
 
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-linear-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                  {testimonial.name.charAt(0)}
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    {testimonial.name}
-                  </div>
-                  <div className="text-gray-600 text-sm">
-                    {testimonial.location}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+    <div className="flex items-center">
+      <div className="w-12 h-12 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+        {testimonial.name.charAt(0)}
+      </div>
+      <div>
+        <div className="font-semibold text-gray-900">
+          {testimonial.name}
+        </div>
+        <div className="text-gray-600 text-sm">
+          {testimonial.location}
+        </div>
+      </div>
+    </div>
+  </div>
+))}
+
         </div>
       </div>
     </section>

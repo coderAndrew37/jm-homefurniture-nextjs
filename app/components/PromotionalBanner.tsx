@@ -62,7 +62,7 @@ export default function PromotionalBanner() {
 
           <div ref={ctaRef}>
             <Link
-              href="/sale"
+              href="/products"
               className="inline-flex items-center gap-2 bg-white text-amber-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
             >
               Shop the Sale
