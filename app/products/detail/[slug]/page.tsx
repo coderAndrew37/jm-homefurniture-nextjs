@@ -95,16 +95,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div>
               <div className="bg-white rounded-2xl p-4 mb-4">
                 <div className="relative aspect-square rounded-lg overflow-hidden">
-                  <Image
-                    src={
-                      product.additionalImages?.[0]
-                        ? urlFor(product.additionalImages[0]).url()
-                        : "/placeholder.png"
-                    }
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                  />
+                 <Image
+  src={
+    product.mainImage
+      ? urlFor(product.mainImage).url()
+      : product.additionalImages?.[0]
+        ? urlFor(product.additionalImages[0]).url()
+        : "/placeholder.png"
+  }
+  alt={product.mainImage?.alt || product.name || "Product image"}
+  fill
+  className="object-cover"
+/>
+
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-2">

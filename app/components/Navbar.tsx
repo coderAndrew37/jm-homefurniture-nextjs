@@ -22,8 +22,7 @@ export default function Navbar({ categories }: NavbarProps) {
         ...categories, // ✅ inject fetched categories here
       ],
     },
-    { name: "Collections", href: "/collections" },
-    { name: "Sale", href: "/sale", highlight: true },
+    { name: "Sale", href: "/products", highlight: true },
     { name: "Blog", href: "/blog" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },

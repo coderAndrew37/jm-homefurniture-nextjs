@@ -86,35 +86,50 @@ export const queries = {
     }
   `,
 
-  productBySlug: groq`
-    *[_type == "product" && slug.current == $slug][0] {
-      _id,
-      name,
-      slug,
-      price,
-      originalPrice,
-      discountPercentage,
-      shortDescription,
-      description,
-      mainImage,
-      additionalImages,
-      category->{ _id, "name": title, slug },
-      collections[]->{ _id, "name": title, slug },
-      availableColors,
-      materials,
-      features,
-      dimensions,
-      weight,
-      rating,
-      stock,
-      sku,
-      isBrandNew,
-      assemblyRequired,
-      warranty,
-      status,
-      seo
-    }
-  `,
+ //Get Best Seller
+ productBySlug: groq`
+  *[_type == "product" && slug.current == $slug][0] {
+    _id,
+    name,
+    slug,
+    price,
+    originalPrice,
+    discountPercentage,
+    shortDescription,
+    description,
+    
+    // ✅ Always return consistent image objects
+    "mainImage": select(
+      defined(mainImage) => {
+        ...mainImage,
+        "alt": coalesce(mainImage.alt, name)
+      },
+      null
+    ),
+    "additionalImages": array::compact(
+      additionalImages[]{
+        ...,
+        "alt": coalesce(^.name, "Product image")
+      }
+    ),
+    
+    category->{ _id, "name": title, slug },
+    collections[]->{ _id, "name": title, slug },
+    availableColors,
+    materials,
+    features,
+    dimensions,
+    weight,
+    rating,
+    stock,
+    sku,
+    isBrandNew,
+    assemblyRequired,
+    warranty,
+    status,
+    seo
+  }
+`,
 
   /* ✅ NEW: Best Sellers */
   bestSellers: groq`*[_type == "product" && status == "active" && isBestSeller == true] | order(_createdAt desc) {
