@@ -87,10 +87,10 @@ export default function Navbar({ categories }: NavbarProps) {
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">K</span>
+                <span className="text-white font-bold text-lg">JM</span>
               </div>
               <span className="text-xl font-bold text-gray-900">
-                Kenyan<span className="text-amber-500">Furniture</span>
+                Home<span className="text-amber-500">Furniture</span>
               </span>
             </Link>
 
@@ -282,7 +282,7 @@ export default function Navbar({ categories }: NavbarProps) {
                 <span className="text-white font-bold text-sm">K</span>
               </div>
               <span className="text-lg font-bold text-gray-900">
-                KenyanFurniture
+                JMHomeFurniture
               </span>
             </Link>
 

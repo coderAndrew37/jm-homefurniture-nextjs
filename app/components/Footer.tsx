@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 const footerLinks = {
   shop: [
@@ -73,7 +72,7 @@ export default function Footer() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-2xl font-bold mb-4">
-                Stay Updated with Kenyan Furniture
+                Stay Updated with JM Home Furniture
               </h3>
               <p className="text-gray-300 max-w-md">
                 Get exclusive offers, new product launches, and home styling
@@ -115,7 +114,7 @@ export default function Footer() {
                   <span className="text-white font-bold text-lg">K</span>
                 </div>
                 <span className="text-xl font-bold text-white">
-                  Kenyan<span className="text-amber-500">Furniture</span>
+                  JM Home<span className="text-amber-500">Furniture</span>
                 </span>
               </Link>
 
@@ -177,7 +176,7 @@ export default function Footer() {
                       d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                   </svg>
-                  <span>hello@kenyanfurniture.co.ke</span>
+                  <span>hello@jmhomefurniture.co.ke</span>
                 </div>
               </div>
             </div>
@@ -259,7 +258,7 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
             {/* Copyright */}
             <div className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} Kenyan Furniture. All rights
+              © {new Date().getFullYear()} JM Home Furniture. All rights
               reserved.
             </div>
 

@@ -52,8 +52,8 @@ export default function BlogCard({
         {/* Image Container */}
         <div
           className={`relative overflow-hidden bg-gray-100 ${
-            layout === "vertical" ? "aspect-[4/3]" : ""
-          } ${layout === "featured" ? "aspect-[21/9]" : ""} ${
+            layout === "vertical" ? "aspect-4/3" : ""
+          } ${layout === "featured" ? "aspect-21/9" : ""} ${
             layout === "horizontal" ? "w-20 h-20 shrink-0 rounded-lg" : ""
           }`}
         >

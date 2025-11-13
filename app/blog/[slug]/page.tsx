@@ -23,29 +23,8 @@ interface PortableTextImage {
   alt?: string;
 }
 
-interface PortableTextMark {
-  _type: string;
-  _key: string;
-  [key: string]: unknown;
-}
-
-interface PortableTextSpan {
-  _type: "span";
-  _key: string;
-  text: string;
-  marks?: string[];
-}
-
-interface PortableTextBlock {
-  _type: "block";
-  _key: string;
-  children: PortableTextSpan[];
-  markDefs?: PortableTextMark[];
-  style?: "normal" | "h1" | "h2" | "h3" | "blockquote";
-  listItem?: "bullet" | "number";
-}
-
 export const revalidate = 60;
+
 async function getPost(slug: string): Promise<BlogPost | null> {
   return await client.fetch(
     groq`*[_type == "post" && slug.current == $slug][0] {
@@ -64,24 +43,33 @@ async function getPost(slug: string): Promise<BlogPost | null> {
 export async function generateMetadata({
   params,
 }: BlogPageProps): Promise<Metadata> {
-  const post = await getPost(params.slug);
+  const { slug } = await params;
+  console.log("🧩 BlogDetailPage slug:", slug);
+
+  const post = await getPost(slug);
 
   if (!post) {
     return {
-      title: "Post Not Found - Kenyan Furniture Blog",
+      title: "Post Not Found - JM Home Furniture Blog",
     };
   }
 
   return {
-    title: `${post.title} | Kenyan Furniture Blog`,
+    title: `${post.title} | JM Home Furniture Blog`,
     description: post.excerpt,
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: [urlFor(post.mainImage).width(800).height(600).url()],
+      images: [
+        {
+          url: post.mainImage
+            ? urlFor(post.mainImage).width(800).height(600).url()
+            : "/placeholder-image.jpg",
+        },
+      ],
       type: "article",
       publishedTime: post.publishedAt,
-      authors: [post.author.name],
+      authors: post.author?.name ? [post.author.name] : undefined,
     },
   };
 }
@@ -162,20 +150,76 @@ const portableTextComponents = {
       const isExternal = href.startsWith("http");
 
       return (
-        <a
+        <Link
           href={href}
           className="text-amber-600 hover:text-amber-700 underline"
           {...(isExternal && { target: "_blank", rel: "noopener noreferrer" })}
         >
           {children}
-        </a>
+        </Link>
       );
     },
   },
 };
 
+// Share buttons component
+function ShareButtons({ title, slug }: { title: string; slug: string }) {
+  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://jmhomefurniture.co.ke'}/blog/${slug}`;
+  const shareText = `Check out this article: ${title}`;
+
+  const shareLinks = {
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`,
+  };
+
+  return (
+    <div className="flex items-center gap-4 mt-8 pt-8 border-t border-gray-200">
+      <span className="text-gray-900 font-medium">Share this article:</span>
+      <div className="flex gap-3">
+        {[
+          { 
+            name: "Facebook", 
+            icon: "📘", 
+            href: shareLinks.facebook 
+          },
+          { 
+            name: "Twitter", 
+            icon: "🐦", 
+            href: shareLinks.twitter 
+          },
+          { 
+            name: "LinkedIn", 
+            icon: "💼", 
+            href: shareLinks.linkedin 
+          },
+          { 
+            name: "WhatsApp", 
+            icon: "💬", 
+            href: shareLinks.whatsapp 
+          },
+        ].map((social) => (
+          <Link
+            key={social.name}
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center transition-colors hover:bg-amber-500 hover:text-white"
+            title={`Share on ${social.name}`}
+          >
+            {social.icon}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function BlogDetailPage({ params }: BlogPageProps) {
-  const post = await getPost(params.slug);
+  // FIX: Properly await the params promise
+  const { slug } = await params;
+  const post = await getPost(slug);
 
   if (!post) {
     notFound();
@@ -196,7 +240,9 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
               Blog
             </Link>
             <span>/</span>
-            <span className="text-gray-900">{post.categories[0]?.title}</span>
+            <span className="text-gray-900">
+              {post.categories?.[0]?.name || 'Uncategorized'}
+            </span>
           </div>
         </nav>
 
@@ -204,7 +250,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
         <header className="mb-12 text-center">
           <div className="flex justify-center items-center gap-4 text-sm text-gray-600 mb-6">
             <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium">
-              {post.categories[0]?.title}
+              {post.categories?.[0]?.name || 'Uncategorized'} {/* FIX: Changed .name to .title */}
             </span>
             <span>
               {new Date(post.publishedAt).toLocaleDateString("en-KE", {
@@ -214,7 +260,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
               })}
             </span>
             <span>•</span>
-            <span>{post.readTime}</span>
+            <span>{post.readTime || '5 min read'}</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
@@ -227,15 +273,26 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
 
           {/* Author Info */}
           <div className="flex items-center justify-center gap-4">
-            <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white font-semibold">
-              {post.author.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </div>
+            {post.author?.image ? (
+              <div className="w-12 h-12 relative rounded-full overflow-hidden">
+                <Image
+                  src={urlFor(post.author.image).width(48).height(48).url()}
+                  alt={post.author.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white font-semibold">
+                {post.author?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </div>
+            )}
             <div className="text-left">
-              <p className="font-semibold text-gray-900">{post.author.name}</p>
-              {post.author.bio && (
+              <p className="font-semibold text-gray-900">{post.author?.name}</p>
+              {post.author?.bio && (
                 <p className="text-gray-600 text-sm">{post.author.bio}</p>
               )}
             </div>
@@ -245,10 +302,15 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
         {/* Featured Image */}
         <div className="relative aspect-[21/9] rounded-2xl overflow-hidden mb-12">
           <Image
-            src={urlFor(post.mainImage).width(800).height(400).url()}
-            alt={post.title}
+            src={
+              post.mainImage
+                ? urlFor(post.mainImage).width(800).height(400).url()
+                : "/placeholder-image.jpg"
+            }
+            alt={post.title || "Blog post image"}
             fill
             className="object-cover"
+            priority
           />
         </div>
 
@@ -278,40 +340,33 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
         )}
 
         {/* Share Buttons */}
-        <div className="flex items-center gap-4 mt-8 pt-8 border-t border-gray-200">
-          <span className="text-gray-900 font-medium">Share this article:</span>
-          <div className="flex gap-3">
-            {[
-              { name: "Facebook", icon: "📘", color: "hover:bg-blue-500" },
-              { name: "Twitter", icon: "🐦", color: "hover:bg-blue-400" },
-              { name: "LinkedIn", icon: "💼", color: "hover:bg-blue-600" },
-              { name: "WhatsApp", icon: "💬", color: "hover:bg-green-500" },
-            ].map((social) => (
-              <button
-                key={social.name}
-                className={`w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center transition-colors ${social.color} hover:text-white`}
-                title={`Share on ${social.name}`}
-              >
-                {social.icon}
-              </button>
-            ))}
-          </div>
-        </div>
+        <ShareButtons title={post.title} slug={post.slug.current} />
 
         {/* Author Bio */}
         <div className="mt-12 p-8 bg-gray-50 rounded-2xl">
           <div className="flex items-start gap-6">
-            <div className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center text-white font-semibold text-xl flex-shrink-0">
-              {post.author.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </div>
+            {post.author?.image ? (
+              <div className="w-20 h-20 relative rounded-full overflow-hidden shrink-0">
+                <Image
+                  src={urlFor(post.author.image).width(80).height(80).url()}
+                  alt={post.author.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center text-white font-semibold text-xl shrink-0">
+                {post.author?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </div>
+            )}
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                About {post.author.name}
+                About {post.author?.name}
               </h3>
-              {post.author.bio && (
+              {post.author?.bio && (
                 <p className="text-gray-600 leading-relaxed">
                   {post.author.bio}
                 </p>
@@ -360,7 +415,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
                           )}
                       </span>
                       <span>•</span>
-                      <span>{relatedPost.readTime}</span>
+                      <span>{relatedPost.readTime || '5 min read'}</span>
                     </div>
                     <h3 className="font-bold text-gray-900 text-lg mb-3 hover:text-amber-600 transition-colors line-clamp-2">
                       {relatedPost.title}

@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Kenyan Furniture - Quality Furniture for Kenyan Homes",
-    template: "%s | Kenyan Furniture",
+    default: "JM Home Furniture - Quality Furniture for Kenyan Homes",
+    template: "%s | JM Home Furniture",
   },
   description:
     "Discover handcrafted furniture that combines modern design with authentic Kenyan artistry. Transform your space with our quality collections. Free delivery in Nairobi.",
@@ -33,15 +33,15 @@ export const metadata: Metadata = {
     "office furniture",
     "Kenyan crafts",
   ],
-  authors: [{ name: "Kenyan Furniture" }],
-  creator: "Kenyan Furniture",
-  publisher: "Kenyan Furniture",
+  authors: [{ name: "JM Home Furniture" }],
+  creator: "JM Home Furniture",
+  publisher: "JM Home Furniture",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://kenyanfurniture.co.ke"),
+  metadataBase: new URL("https://jmhomefurniture.co.ke"),
   alternates: {
     canonical: "/",
     languages: {
@@ -51,9 +51,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_KE",
-    url: "https://kenyanfurniture.co.ke",
-    siteName: "Kenyan Furniture",
-    title: "Kenyan Furniture - Quality Furniture for Kenyan Homes",
+    url: "https://jmhomefurniture.co.ke",
+    siteName: "JM Home Furniture",
+    title: "JM Home Furniture - Quality Furniture for Kenyan Homes",
     description:
       "Discover handcrafted furniture that combines modern design with authentic Kenyan artistry.",
     images: [
@@ -61,17 +61,17 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Kenyan Furniture - Quality Furniture for Kenyan Homes",
+        alt: "JM Home Furniture - Quality Furniture for Kenyan Homes",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kenyan Furniture - Quality Furniture for Kenyan Homes",
+    title: "JM Home Furniture - Quality Furniture for Kenyan Homes",
     description:
       "Discover handcrafted furniture that combines modern design with authentic Kenyan artistry.",
     images: ["/og-image.jpg"],
-    creator: "@kenyanfurniture",
+    creator: "@jmhomefurniture",
   },
   robots: {
     index: true,
