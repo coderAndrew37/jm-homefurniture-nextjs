@@ -213,14 +213,14 @@ export const BlogPostSchema = z.object({
     _type: z.literal("slug"),
     current: z.string(),
   }),
-  excerpt: z.string(),
-  mainImage: SanityImage,
-  publishedAt: z.string(),
-  readTime: z.string(), // Changed from number to string to match Sanity
-  author: AuthorSchema,
-  categories: z.array(BlogCategorySchema),
-  tags: z.array(z.string()),
-  body: z.array(PortableTextBlockSchema),
+  excerpt: z.string().optional().default(""),
+  mainImage: SanityImage.optional(), // ✅ sometimes missing
+  publishedAt: z.string().optional().default(""),
+  readTime: z.string().optional().default(""),
+  author: AuthorSchema.optional(), // ✅ not all posts have an author
+  categories: z.array(BlogCategorySchema).optional().default([]), // ✅ key fix
+  tags: z.array(z.string()).optional().default([]), // ✅ prevent undefined
+  body: z.array(PortableTextBlockSchema).optional().default([]),
   featured: z.boolean().optional().default(false),
   relatedPosts: z
     .array(
@@ -241,6 +241,7 @@ export const BlogPostSchema = z.object({
     .optional()
     .default([]),
 });
+
 
 export type BlogPost = z.infer<typeof BlogPostSchema>;
 
