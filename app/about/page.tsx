@@ -1,11 +1,17 @@
+import {
+  MILESTONES_QUERY,
+  TEAM_QUERY,
+  VALUES_QUERY,
+} from "@/lib/aboutPageQueries";
+import { client } from "@/lib/sanity.client";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About Us - Kenyan Furniture Store",
+  title: "About Us - JM Home Furniture Store",
   description:
-    "Learn about Kenyan Furniture - our story, mission, and commitment to bringing quality, sustainable furniture to Kenyan homes since 2020.",
+    "Learn about JM Home Furniture - our story, mission, and commitment to bringing quality, sustainable furniture to Kenyan homes since 2020.",
 };
 
 interface TeamMember {
@@ -13,80 +19,26 @@ interface TeamMember {
   role: string;
   bio: string;
   image: string;
+  _id: string;
+}
+
+interface Milestones {
+  _id: string;
+  year: number;
+  event: string;
 }
 
 interface Value {
   title: string;
   description: string;
   icon: string;
+  _id: string;
 }
 
-const teamMembers: TeamMember[] = [
-  {
-    name: "Sarah Wanjiku",
-    role: "Founder & CEO",
-    bio: "With over 15 years in interior design, Sarah started Kenyan Furniture to bring quality, affordable furniture to Kenyan homes.",
-    image: "/team-sarah.jpg",
-  },
-  {
-    name: "James Mwangi",
-    role: "Head of Production",
-    bio: "James brings traditional woodworking expertise combined with modern techniques to ensure every piece meets our quality standards.",
-    image: "/team-james.jpg",
-  },
-  {
-    name: "Grace Akinyi",
-    role: "Design Director",
-    bio: "Grace leads our design team in creating furniture that blends Kenyan cultural elements with contemporary aesthetics.",
-    image: "/team-grace.jpg",
-  },
-];
-
-const values: Value[] = [
-  {
-    title: "Sustainability",
-    description:
-      "We use responsibly sourced materials and eco-friendly practices to minimize our environmental impact.",
-    icon: "🌱",
-  },
-  {
-    title: "Quality Craftsmanship",
-    description:
-      "Every piece is meticulously crafted by skilled artisans who take pride in their work.",
-    icon: "🔨",
-  },
-  {
-    title: "Community Impact",
-    description:
-      "We support local communities and preserve traditional skills through fair employment practices.",
-    icon: "🤝",
-  },
-  {
-    title: "Customer Focus",
-    description:
-      "Your satisfaction is our priority. We go above and beyond to ensure you love your furniture.",
-    icon: "💝",
-  },
-];
-
-const milestones = [
-  {
-    year: "2020",
-    event: "Founded Kenyan Furniture with a vision to transform Kenyan homes",
-  },
-  { year: "2021", event: "Opened our first showroom in Nairobi" },
-  {
-    year: "2022",
-    event: "Launched our e-commerce platform serving all of Kenya",
-  },
-  {
-    year: "2023",
-    event: "Expanded our product line to include custom furniture",
-  },
-  { year: "2024", event: "Reached 10,000+ happy customers across Kenya" },
-];
-
-export default function AboutPage() {
+export default async function AboutPage() {
+  const teamMembers = await client.fetch(TEAM_QUERY);
+  const values = await client.fetch(VALUES_QUERY);
+  const milestones = await client.fetch(MILESTONES_QUERY);
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -110,7 +62,7 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-4 text-gray-600 text-lg">
                 <p>
-                  Founded in 2020, Kenyan Furniture was born from a passion for
+                  Founded in 2020, JM Home Furniture was born from a passion for
                   combining traditional Kenyan craftsmanship with contemporary
                   design principles. We believe that every home deserves
                   beautiful, functional furniture that tells a story.
@@ -133,7 +85,7 @@ export default function AboutPage() {
             <div className="relative aspect-square rounded-2xl overflow-hidden">
               <Image
                 src="/about-showroom.jpg"
-                alt="Kenyan Furniture Showroom"
+                alt="JM Home Furniture Showroom"
                 fill
                 className="object-cover"
               />
@@ -142,50 +94,19 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Our Values
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              The principles that guide everything we do at Kenyan Furniture
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
-              <div
-                key={index}
-                className="text-center p-6 bg-white rounded-2xl shadow-sm border border-gray-200"
-              >
-                <div className="text-4xl mb-4">{value.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  {value.title}
-                </h3>
-                <p className="text-gray-600">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Team Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Meet Our Team
-            </h2>
+            <h2 className="text-4xl font-bold text-gray-900">Meet Our Team</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              The passionate people behind Kenyan Furniture
+              The passionate people behind JM Home Furniture
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="text-center">
+            {teamMembers.map((member: TeamMember) => (
+              <div key={member._id} className="text-center">
                 <div className="relative w-48 h-48 mx-auto mb-6">
                   <Image
                     src={member.image}
@@ -194,41 +115,49 @@ export default function AboutPage() {
                     className="object-cover rounded-full"
                   />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {member.name}
-                </h3>
-                <p className="text-amber-600 font-medium mb-3">{member.role}</p>
-                <p className="text-gray-600">{member.bio}</p>
+                <h3 className="text-xl font-semibold">{member.name}</h3>
+                <p className="text-amber-600 font-medium">{member.role}</p>
+                <p className="text-gray-600 mt-2">{member.bio}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Timeline Section */}
+      {/* Values */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Our Journey
-            </h2>
-            <p className="text-xl text-gray-600">
-              Milestones in our growth and commitment to Kenyan homes
-            </p>
+            <h2 className="text-4xl font-bold">Our Values</h2>
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            {milestones.map((milestone, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {values.map((value: Value) => (
               <div
-                key={index}
-                className="flex items-start gap-6 mb-8 last:mb-0"
+                key={value._id}
+                className="text-center p-6 bg-white rounded-2xl shadow-sm"
               >
-                <div className="flex-shrink-0 w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                  {milestone.year}
+                <div className="text-4xl mb-4">{value.icon}</div>
+                <h3 className="text-xl font-semibold">{value.title}</h3>
+                <p className="text-gray-600 mt-2">{value.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Milestones */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-center text-4xl font-bold mb-12">Our Journey</h2>
+
+          <div className="max-w-4xl mx-auto">
+            {milestones.map((item: Milestones) => (
+              <div key={item._id} className="flex gap-6 mb-8">
+                <div className="w-20 h-20 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold">
+                  {item.year}
                 </div>
-                <div className="flex-1 pt-2">
-                  <p className="text-lg text-gray-900">{milestone.event}</p>
-                </div>
+                <div className="pt-2 text-lg">{item.event}</div>
               </div>
             ))}
           </div>
