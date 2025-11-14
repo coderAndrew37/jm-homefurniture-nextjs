@@ -71,17 +71,54 @@ export default function CustomDesign() {
     }));
   };
 
+  const saveOrderToDatabase = async (formData: CustomFormData) => {
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          description: `Custom ${formData.projectType} - ${formData.description}`,
+          budget: formData.budget,
+          timeline: formData.timeline,
+          notes: `Materials: ${formData.materials}, Style: ${formData.style}, Dimensions: ${formData.dimensions}`,
+          images: formData.referenceImages.map((file) =>
+            URL.createObjectURL(file)
+          ),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save order");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error saving order:", error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Save order to MongoDB
+      await saveOrderToDatabase(formData);
 
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    setIsSubmitting(false);
-    setStep(5); // Success step
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      console.log("Form submitted:", formData);
+      setIsSubmitting(false);
+      setStep(5); // Success step
+    } catch (error) {
+      console.error("Failed to submit form:", error);
+      setIsSubmitting(false);
+      // Handle error state here
+    }
   };
 
   const nextStep = () => setStep((prev) => prev + 1);

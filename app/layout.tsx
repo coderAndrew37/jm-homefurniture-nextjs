@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import "./globals.css";
 import NavbarWrapper from "./components/NavbarWrapper";
 import WhatsAppFloat from "./components/WhatsappFloat";
+import { SessionProvider } from "./components/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -103,9 +104,12 @@ export default function RootLayout({
       >
         <NavbarWrapper />
         <main className="min-h-screen">
-          {children}
-          <WhatsAppFloat />
-          <Toaster />
+          <SessionProvider>
+            {children}
+            <WhatsAppFloat />
+
+            <Toaster />
+          </SessionProvider>
         </main>
         <Footer />
       </body>
