@@ -1,20 +1,38 @@
 "use client";
+import Link from "next/link"; // Fixed: Import from next/link instead of lucide-react
+import { useState, useRef, ChangeEvent } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRef, useState } from "react";
+
+type CustomFormData = {
+  projectType: string;
+  dimensions: string;
+  materials: string;
+  style: string;
+  budget: string;
+  timeline: string;
+  description: string;
+  referenceImages: File[];
+  name: string;
+  email: string;
+  phone: string;
+};
+
+type ProjectType = {
+  value: string;
+  label: string;
+};
+
+type StyleType = {
+  value: string;
+  label: string;
+};
+
+type BudgetType = {
+  value: string;
+  label: string;
+};
 
 export default function CustomDesign() {
-  type CustomFormData = {
-    projectType: string;
-    dimensions: string;
-    materials: string;
-    style: string;
-    budget: string;
-    timeline: string;
-    description: string;
-    referenceImages: File[];
-  };
-
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState<CustomFormData>({
     projectType: "",
@@ -25,20 +43,25 @@ export default function CustomDesign() {
     timeline: "",
     description: "",
     referenceImages: [],
+    name: "",
+    email: "",
+    phone: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof CustomFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData((prev) => ({
-      ...prev,
-      referenceImages: [...prev.referenceImages, ...files],
-    }));
+  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setFormData((prev) => ({
+        ...prev,
+        referenceImages: [...prev.referenceImages, ...files],
+      }));
+    }
   };
 
   const removeImage = (index: number) => {
@@ -48,7 +71,7 @@ export default function CustomDesign() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -64,7 +87,7 @@ export default function CustomDesign() {
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
 
-  const projectTypes = [
+  const projectTypes: ProjectType[] = [
     { value: "sofa", label: "Sofa & Seating" },
     { value: "table", label: "Table & Desk" },
     { value: "storage", label: "Storage & Cabinets" },
@@ -73,7 +96,7 @@ export default function CustomDesign() {
     { value: "other", label: "Other Furniture" },
   ];
 
-  const styles = [
+  const styles: StyleType[] = [
     { value: "modern", label: "Modern" },
     { value: "rustic", label: "Rustic" },
     { value: "industrial", label: "Industrial" },
@@ -82,7 +105,7 @@ export default function CustomDesign() {
     { value: "fusion", label: "Fusion" },
   ];
 
-  const budgets = [
+  const budgets: BudgetType[] = [
     { value: "15-25k", label: "KSh 15,000 - 25,000" },
     { value: "25-50k", label: "KSh 25,000 - 50,000" },
     { value: "50-100k", label: "KSh 50,000 - 100,000" },
@@ -146,11 +169,13 @@ export default function CustomDesign() {
               {projectTypes.map((type) => (
                 <button
                   key={type.value}
+                  type="button"
                   onClick={() => {
                     handleInputChange("projectType", type.value);
                     nextStep();
                   }}
                   className="p-6 border-2 border-gray-200 hover:border-amber-400 hover:bg-amber-50 rounded-lg transition-all duration-300 group"
+                  aria-label={`Select ${type.label}`}
                 >
                   <div className="text-2xl mb-3 group-hover:scale-110 transition-transform duration-300">
                     {type.value === "sofa" && "🛋️"}
@@ -166,6 +191,7 @@ export default function CustomDesign() {
             </div>
 
             <button
+              type="button"
               onClick={() => setStep(4)}
               className="text-gray-500 hover:text-gray-700 underline text-sm"
             >
@@ -187,10 +213,14 @@ export default function CustomDesign() {
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="dimensions"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Dimensions (optional)
                 </label>
                 <input
+                  id="dimensions"
                   type="text"
                   placeholder="e.g., 200cm length × 90cm width × 80cm height"
                   value={formData.dimensions}
@@ -198,14 +228,22 @@ export default function CustomDesign() {
                     handleInputChange("dimensions", e.target.value)
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition-all"
+                  aria-describedby="dimensions-help"
                 />
+                <p id="dimensions-help" className="sr-only">
+                  Enter the desired dimensions for your furniture piece
+                </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="materials"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Preferred Materials (optional)
                 </label>
                 <input
+                  id="materials"
                   type="text"
                   placeholder="e.g., Solid oak, leather upholstery, brass details"
                   value={formData.materials}
@@ -213,14 +251,27 @@ export default function CustomDesign() {
                     handleInputChange("materials", e.target.value)
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition-all"
+                  aria-describedby="materials-help"
                 />
+                <p id="materials-help" className="sr-only">
+                  Specify your preferred materials for the furniture
+                </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="design-style"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Design Style
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+
+                <div
+                  id="design-style"
+                  role="radiogroup"
+                  aria-label="Design style options"
+                  className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+                >
                   {styles.map((styleItem) => (
                     <button
                       key={styleItem.value}
@@ -228,11 +279,34 @@ export default function CustomDesign() {
                       onClick={() =>
                         handleInputChange("style", styleItem.value)
                       }
-                      className={`p-3 border rounded-lg text-sm transition-all ${
+                      onKeyDown={(e) => {
+                        const currentIndex = styles.findIndex(
+                          (s) => s.value === formData.style
+                        );
+                        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                          const nextIndex = (currentIndex + 1) % styles.length;
+                          handleInputChange("style", styles[nextIndex].value);
+                        } else if (
+                          e.key === "ArrowLeft" ||
+                          e.key === "ArrowUp"
+                        ) {
+                          e.preventDefault();
+                          const prevIndex =
+                            (currentIndex - 1 + styles.length) % styles.length;
+                          handleInputChange("style", styles[prevIndex].value);
+                        }
+                      }}
+                      className={`p-3 border rounded-lg text-sm text-center transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                         formData.style === styleItem.value
                           ? "border-amber-400 bg-amber-50 text-amber-700"
                           : "border-gray-300 hover:border-gray-400"
                       }`}
+                      role="radio"
+                      aria-checked={
+                        formData.style === styleItem.value ? "true" : "false"
+                      }
+                      aria-label={styleItem.label}
                     >
                       {styleItem.label}
                     </button>
@@ -242,12 +316,14 @@ export default function CustomDesign() {
 
               <div className="flex gap-4 pt-6">
                 <button
+                  type="button"
                   onClick={prevStep}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all"
                 >
                   Back
                 </button>
                 <button
+                  type="button"
                   onClick={nextStep}
                   className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all flex-1"
                 >
@@ -271,25 +347,32 @@ export default function CustomDesign() {
 
             <div className="space-y-6">
               {/* File Upload Area */}
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-amber-400 hover:bg-amber-50 cursor-pointer transition-all group"
-              >
-                <div className="text-4xl mb-4 text-gray-400 group-hover:text-amber-400">
-                  📸
-                </div>
-                <p className="text-gray-600 mb-2">Click to upload images</p>
-                <p className="text-sm text-gray-500">
-                  PNG, JPG up to 10MB each
-                </p>
+              <div>
+                <label
+                  htmlFor="file-upload"
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-amber-400 hover:bg-amber-50 cursor-pointer transition-all group block"
+                >
+                  <div className="text-4xl mb-4 text-gray-400 group-hover:text-amber-400">
+                    📸
+                  </div>
+                  <p className="text-gray-600 mb-2">Click to upload images</p>
+                  <p className="text-sm text-gray-500">
+                    PNG, JPG up to 10MB each
+                  </p>
+                </label>
                 <input
+                  id="file-upload"
                   ref={fileInputRef}
                   type="file"
                   multiple
                   accept="image/*"
                   onChange={handleFileUpload}
                   className="hidden"
+                  aria-describedby="file-upload-help"
                 />
+                <p id="file-upload-help" className="sr-only">
+                  Upload reference images for your custom furniture design
+                </p>
               </div>
 
               {/* Uploaded Images Preview */}
@@ -303,12 +386,17 @@ export default function CustomDesign() {
                       <div key={index} className="relative group">
                         <Image
                           src={URL.createObjectURL(file)}
-                          alt={`Reference ${index + 1}`}
+                          alt={`Reference image ${index + 1} for custom furniture design`}
+                          width={200}
+                          height={150}
                           className="w-full h-32 object-cover rounded-lg"
                         />
+
                         <button
+                          type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-sm hover:bg-red-600 transition-all"
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-sm hover:bg-red-600 transition-all flex items-center justify-center"
+                          aria-label={`Remove image ${index + 1}`}
                         >
                           ×
                         </button>
@@ -320,12 +408,14 @@ export default function CustomDesign() {
 
               <div className="flex gap-4 pt-6">
                 <button
+                  type="button"
                   onClick={prevStep}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all"
                 >
                   Back
                 </button>
                 <button
+                  type="button"
                   onClick={nextStep}
                   className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all flex-1"
                 >
@@ -350,53 +440,107 @@ export default function CustomDesign() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Your Name *
                   </label>
                   <input
+                    id="name"
                     type="text"
                     required
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition-all"
+                    placeholder="Enter your full name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Email Address *
                   </label>
                   <input
+                    id="email"
                     type="email"
                     required
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition-all"
+                    placeholder="Enter your email address"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Phone Number (optional)
                 </label>
                 <input
+                  id="phone"
                   type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition-all"
+                  placeholder="Enter your phone number"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="budget-range"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Budget Range
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+                <div
+                  id="budget-range"
+                  role="radiogroup"
+                  aria-label="Budget range options"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+                >
                   {budgets.map((budget) => (
                     <button
                       key={budget.value}
                       type="button"
                       onClick={() => handleInputChange("budget", budget.value)}
-                      className={`p-3 border rounded-lg text-sm transition-all ${
+                      onKeyDown={(e) => {
+                        const currentIndex = budgets.findIndex(
+                          (b) => b.value === formData.budget
+                        );
+                        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                          const nextIndex = (currentIndex + 1) % budgets.length;
+                          handleInputChange("budget", budgets[nextIndex].value);
+                        } else if (
+                          e.key === "ArrowLeft" ||
+                          e.key === "ArrowUp"
+                        ) {
+                          e.preventDefault();
+                          const prevIndex =
+                            (currentIndex - 1 + budgets.length) %
+                            budgets.length;
+                          handleInputChange("budget", budgets[prevIndex].value);
+                        }
+                      }}
+                      className={`p-3 border rounded-lg text-sm text-center transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                         formData.budget === budget.value
                           ? "border-amber-400 bg-amber-50 text-amber-700"
                           : "border-gray-300 hover:border-gray-400"
                       }`}
+                      role="radio"
+                      aria-checked={
+                        formData.budget === budget.value ? "true" : "false"
+                      }
+                      aria-label={budget.label}
                     >
                       {budget.label}
                     </button>
@@ -405,10 +549,14 @@ export default function CustomDesign() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Project Description
                 </label>
                 <textarea
+                  id="description"
                   rows={4}
                   placeholder="Tell us more about your project, any specific requirements, or the story behind this piece..."
                   value={formData.description}
