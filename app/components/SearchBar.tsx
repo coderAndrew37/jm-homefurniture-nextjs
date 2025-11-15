@@ -299,6 +299,7 @@ export default function SearchBar() {
             onClick={clearSearch}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
             type="button"
+            aria-label="Search bar close"
           >
             <X className="w-4 h-4 text-gray-400" />
           </button>
@@ -347,7 +348,7 @@ export default function SearchBar() {
                         type="button"
                       >
                         {/* Product Image */}
-                        <div className="relative flex-shrink-0">
+                        <div className="relative shrink-0">
                           {item.mainImage ? (
                             <Image
                               src={
@@ -487,6 +488,7 @@ export default function SearchBar() {
                           onClick={(e) => removeRecentSearch(search.id, e)}
                           className="p-1 hover:bg-gray-200 rounded transition-colors"
                           type="button"
+                          aria-label="Search bar close"
                         >
                           <X className="w-3 h-3 text-gray-400" />
                         </button>
