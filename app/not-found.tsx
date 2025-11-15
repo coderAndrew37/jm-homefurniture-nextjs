@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Page Not Found - Kenyan Furniture",
+  title: "Page Not Found - JM Home Furniture",
   description: "The page you are looking for does not exist or has been moved.",
 };
 
@@ -65,7 +65,7 @@ export default function NotFound() {
                 href="mailto:support@kenyanfurniture.co.ke"
                 className="hover:text-amber-600 transition-colors"
               >
-                ✉️ support@kenyanfurniture.co.ke
+                ✉️ support@jmhomefurniture.co.ke
               </a>
             </div>
           </div>

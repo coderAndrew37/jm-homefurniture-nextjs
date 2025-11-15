@@ -158,7 +158,7 @@ export default function SearchBar() {
     (slug: string) => {
       isProcessingClick.current = true;
       saveRecentSearch(query);
-      router.push(`/products/${slug}`);
+      router.push(`/products/detail/${slug}`);
       // Don't reset state immediately to allow navigation to complete
       setTimeout(() => {
         setQuery("");
